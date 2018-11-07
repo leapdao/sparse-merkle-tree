@@ -1,0 +1,23 @@
+{
+  "name": "csmt.js",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "scripts": {
+    "test": "tsc && mocha test/* --compilers js:babel-core/register",
+    "build": "tsc"
+  },
+  "dependencies": {
+    "@types/ethereumjs-util": "^5.2.0",
+    "@types/node": "^10.12.2",
+    "bignumber.js": "^8.0.1",
+    "buffer-xor": "^2.0.2",
+    "ethereumjs-util": "^6.0.0"
+  },
+  "devDependencies": {
+    "babel-core": "^6.26.3",
+    "babel-preset-es2015": "^6.24.1",
+    "chai": "^4.2.0",
+    "mocha": "^5.2.0"
+  }
+}
