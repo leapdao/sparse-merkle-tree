@@ -4,7 +4,7 @@
   "main": "index.js",
   "license": "MIT",
   "scripts": {
-    "test": "tsc && mocha test/* --compilers js:babel-core/register",
+    "test": "mocha test/* --compilers js:babel-core/register",
     "build": "tsc"
   },
   "dependencies": {
