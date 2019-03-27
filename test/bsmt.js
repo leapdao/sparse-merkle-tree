@@ -51,13 +51,41 @@ describe('Binary Sparse Merkle Tree', () => {
   	assert.equal(bsmt.getHexRoot(), bufferToHex(keccak256(Buffer.concat([leaf1, leaf2]))));
   });
 
-  it('should allow to get proof', () => {
-  	const key1 = Buffer.from('0000000000000000000000000000000000000001', 'hex');                 // 0.0.0.1
+  it('should throw on proof with non-contained element', () => {
+    const key1 = Buffer.from('0000000000000000000000000000000000000001', 'hex');
+    const value1 = Buffer.from('0000000000000000000000000000000000000000000000000000000000000001', 'hex');
+    const bsmt = new BubbleTree([{key: key1, value: value1}]);
+    try {
+      bsmt.getProof(Buffer.from('0000000000000000000000000000000000000002', 'hex'));
+      assert(false, 'should have thrown');
+    } catch (err) {
+      assert.equal(err.message, 'element not contained.');
+    }
+  });
+
+  it('should allow to get proof of inclusion', () => {
+  	const key1 = Buffer.from('0000000000000000000000000000000000000001', 'hex');
   	const value1 = Buffer.from('0000000000000000000000000000000000000000000000000000000000000001', 'hex');
-  	const key2 = Buffer.from('0000000000000000000000000000000000000005', 'hex');                 // 0.1.0.1
+  	const key2 = Buffer.from('0000000000000000000000000000000000000005', 'hex');
   	const value2 = Buffer.from('0000000000000000000000000000000000000000000000000000000000000002', 'hex');
   	const bsmt = new BubbleTree([{key: key1, value: value1}, {key: key2, value: value2}]);
-  	console.log(bsmt.getProof(Buffer.from('0000000000000000000000000000000000000002', 'hex')));  // 0.0.1.0
+  	const proof = bsmt.getIncProof(key1);
+    assert.equal(proof.value, value1);
+    assert(proof.siblings[0].equals(keccak256(Buffer.concat([key1, value1]))));
+    assert(proof.trail.equals(Buffer.from('0000000000000000000000000000000000000004', 'hex')));
+  });
+
+  it('should allow to get proof of exclusion', () => {
+    const key1 = Buffer.from('0000000000000000000000000000000000000001', 'hex');
+    const value1 = Buffer.from('0000000000000000000000000000000000000000000000000000000000000001', 'hex');
+    const key2 = Buffer.from('0000000000000000000000000000000000000005', 'hex');
+    const value2 = Buffer.from('0000000000000000000000000000000000000000000000000000000000000002', 'hex');
+    const bsmt = new BubbleTree([{key: key1, value: value1}, {key: key2, value: value2}]);
+    const proof1 = bsmt.getProof(key1);
+    const proof2 = bsmt.getProof(key2);
+    console.log(proof1);
+    console.log(proof2);
+    // wip
   });
 
 });

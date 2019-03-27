@@ -24,19 +24,18 @@ export function getBit(key, pos) {
   return (key.readInt8(bytePos) >> 7 - (pos % 8)) & 1;
 }
 
+function setTrailBit(trail, pos) { 
+  const bytePos = Math.floor(pos / 8);
+  let val = trail.readInt8(bytePos);
+  val += 1 << 7 - (pos % 8);
+  trail.writeInt8(val, bytePos);
+}
+
 export function getRoot(elements, height = 0, proof) {
   if (elements.length === 0) {
     throw new Error('0 elements 🤷‍♂️');
   }
   if (elements.length === 1) {
-    if (proof) {
-      if (elements[0].key.equals(proof.key)) {
-        // fill up with 0
-        for (let i = 0; i < keyLength * 8 - height; i+=1) {
-          proof.trail += '0';
-        }
-      }
-    }
     if (elements[0].value.equals(zeroKey)) {
       return zeroKey;
     }
@@ -57,32 +56,26 @@ export function getRoot(elements, height = 0, proof) {
   let rootHash;
   if (left.length === 0) {
     rootHash = getRoot(right, height + 1, proof);
-    if (proof) {
-      proof.trail += '0';
-    }
     return rootHash;
   }
   if (right.length === 0) {
     rootHash = getRoot(left, height + 1, proof);
-    if (proof) {
-      proof.trail += '0';
-    }
     return rootHash;
   }
   const leftHash = getRoot(left, height + 1, proof);
   const rightHash = getRoot(right, height + 1, proof);
   if (leftHash.equals(zeroKey)) {
-    proof.trail += '1';
+    setTrailBit(proof.trail, height);
     proof.siblings.push(rightHash);
     return rightHash;
   }
   if (rightHash.equals(zeroKey)) {
-    proof.trail += '1';
+    setTrailBit(proof.trail, height);
     proof.siblings.push(leftHash);
     return leftHash;
   }
   if (proof) {
-    proof.trail += '1';
+    setTrailBit(proof.trail, height);
     proof.siblings.push(getBit(proof.key, height) ? rightHash : leftHash);
   }
   return keccak256(Buffer.concat([leftHash, rightHash]));
@@ -118,12 +111,57 @@ export default class BubbleTree {
     return bufferToHex(this.getRoot());
   }
 
-  getProof(key) {
-    const elements = [...this.elements];
-    elements.push({key, value: Buffer.alloc(32, 0)});
-    const proof = { key, trail: '', siblings: [] };
-    getRoot(elements, 0, proof);
+  getIncProof(key) {
+    const proof = { key, trail: Buffer.alloc(keyLength, 0), siblings: [] };
+    for (const element of this.elements) {
+      if (element.key.equals(key)) {
+        proof.value = element.value;
+      }
+    }
+    if (!proof.value) {
+      throw new Error('element not contained.');
+    }
+    getRoot(this.elements, 0, proof);
     return proof;
+  }
+
+  getExcProof(key) {
+    // what if tree empty?
+    // find leftmost key
+      // if no leftmost key exists???
+    // find rightmost key
+      // if no rightmost key exists???
+    // get prooofs for both
+    // combine proofs
+    //   remove smallest trail bit
+    //   remove last sibling
+    const proof = {
+      leftKey,
+      leftValue,
+      rightKey,
+      rightValue,
+      trail: Buffer.alloc(keyLength, 0),
+      siblings: []
+    };
+    return proof;
+  }
+
+  insertElement(key, value, exclusionProof) {
+    // verify exclusion proof
+    // verify that key is between left and right proof keys
+    // calculate new root hash
+  }
+
+  updateElement(key, value, inclusionProof) {
+    // verify inclusion proof
+    // verify that key matches proof key
+    // caclulate new root hash
+  }
+
+  deleteElement(key, inclusionProof) {
+    // verify inclusion proof
+    // verify that key matches proof key
+    // calculate new root hash
   }
 
   getHexProof(el) {
