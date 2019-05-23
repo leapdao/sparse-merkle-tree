@@ -72,13 +72,15 @@ module.exports = class SmtLib {
     let trail = Buffer.alloc(this.depth / 8, 0);
     let siblingIndex;
     let siblingHash;
-    for (let level=0; level < this.depth; level++) {
+    for (let level = 0; level < this.depth; level++) {
       siblingIndex = (JSBI.__absoluteModSmall(index, 2) === 0) ? JSBI.add(index, one) : JSBI.subtract(index, one);
       index = JSBI.divide(index, two);
-      siblingHash = this.tree[level][siblingIndex.toString(10)];
-      if (siblingHash) {
-        proof += siblingHash.replace('0x', '');
-        setTrailBit(trail, level);
+      if (level < this.tree.length) {
+        siblingHash = this.tree[level][siblingIndex.toString(10)];
+        if (siblingHash) {
+          proof += siblingHash.replace('0x', '');
+          setTrailBit(trail, level);
+        }
       }
     }
     let total = Buffer.concat([trail, Buffer.from(proof, 'hex')]);
