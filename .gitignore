@@ -1,4 +1,10 @@
 node_modules/
-dist/
+build/
+.vscode
+.idea
 
+*.env
+
+node_config.json
+.priv
 yarn-error.log
