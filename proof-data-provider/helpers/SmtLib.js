@@ -34,7 +34,7 @@ function setTrailBit(trail, pos) {
   trail.writeUInt8(val, bytePos);
 }
 
-function setdefaultNodes(depth) {
+function setDefaultNodes(depth) {
   const defaultNodes = new Array(depth + 1);
   defaultNodes[0] = `0x${Buffer.alloc(32, 0).toString('hex')}`;
   for (let i = 1; i < depth + 1; i++) {
@@ -89,7 +89,7 @@ module.exports = class SmtLib {
   constructor(depth, leaves) {
     this.depth = depth;
     // Initialize defaults
-    this.defaultNodes = setdefaultNodes(depth);
+    this.defaultNodes = setDefaultNodes(depth);
     // Leaves must be a dictionary with key as the leaf's slot and value the leaf's hash
     this.leaves = leaves;
 
