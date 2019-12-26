@@ -19,8 +19,8 @@ curl -X POST http://3.9.177.228/ -H 'Content-Type: application/json' -d '{
   "jsonrpc":"2.0",
   "method":"addTreeManually",
   "params": {
-    "_depth": 16,
-    "_leaves": {"15":"0x0000000000000000000000000000000000000000000000000000000000000001", "24":"0x0000000000000000000000000000000000000000000000000000000000000002", "255": "0x0000000000000000000000000000000000000000000000000000000000000003"}
+    "depth": 16,
+    "leaves": {"15":"0x0000000000000000000000000000000000000000000000000000000000000001", "24":"0x0000000000000000000000000000000000000000000000000000000000000002", "255": "0x0000000000000000000000000000000000000000000000000000000000000003"}
   },
   "id": 65
   }'
@@ -29,10 +29,10 @@ curl -X POST http://3.9.177.228/ -H 'Content-Type: application/json' -d '{
 ## SaveTree block:
 
 ### Method - `addTreeManually`.
-You can save your tree to the provider's database manually by sending POST request with corresponding data inside it. The data must be object with keys `_depth` and `_leaves` and the values must be `number` and `object` (`{}`) accordingly.
+You can save your tree to the provider's database manually by sending POST request with corresponding data inside it. The data must be object with keys `depth` and `leaves` and the values must be `number` and `object` (`{}`) accordingly.
 Example of the request's data:
 ```
-{"jsonrpc":"2.0", "method": "addTreeManually", "params": {"_depth": 160, "_leaves": {"0x0000000000000000000000000000000000000001": "0x0000000000000000000000000000000000000000000000000000000000000001", "0x0000000000000000000000000000000000000002": "0x0000000000000000000000000000000000000000000000000000000000000002"} }, "id":64}
+{"jsonrpc":"2.0", "method": "addTreeManually", "params": {"depth": 160, "leaves": {"0x0000000000000000000000000000000000000001": "0x0000000000000000000000000000000000000000000000000000000000000001", "0x0000000000000000000000000000000000000002": "0x0000000000000000000000000000000000000000000000000000000000000002"} }, "id":64}
 ```
 Example of the response:
 ```
@@ -66,7 +66,7 @@ Prerequisites:
 
 Example of the request's data:
 ```
-{"jsonrpc":"2.0", "method": "addTreeFromContract", "params": {"_config": {
+{"jsonrpc":"2.0", "method": "addTreeFromContract", "params": {"config": {
   "smtDEPTH" : 160,
   "net" : "ropsten",
   "contractABI" : [...],
@@ -84,11 +84,11 @@ The response's result is your tree's INDEX into provider's database. You need to
 ## UpdateTree block:
 
 ### Method - `updateTreeManually`.
-If you set up your tree manually, you are able to update it manually. You should send POST request with corresponding data inside it. The data must be an object with keys `_index` (you received index of your tree when you created it using "addTreeManually" method) and `_leaves` (leaves must contain only new data, if values of already existing keys was changed, this key/value pairs must be included). The value's data type must be `number` and `object` (`{}`) accordingly.
+If you set up your tree manually, you are able to update it manually. You should send POST request with corresponding data inside it. The data must be an object with keys `index` (you received index of your tree when you created it using "addTreeManually" method) and `leaves` (leaves must contain only new data, if values of already existing keys was changed, this key/value pairs must be included). The value's data type must be `number` and `object` (`{}`) accordingly.
 
   Example of request's data:
   ```
-  {"jsonrpc":"2.0", "method": "updateTreeManually", "params": {"_index":307534184564, "_leaves": {"0x0000000000000000000000000000000000000005": "0x0000000000000000000000000000000000000000000000000000000000000007", "0x0000000000000000000000000000000000000002": "0x0000000000000000000000000000000000000000000000000000000000000003"} }, "id":32}
+  {"jsonrpc":"2.0", "method": "updateTreeManually", "params": {"index":307534184564, "leaves": {"0x0000000000000000000000000000000000000005": "0x0000000000000000000000000000000000000000000000000000000000000007", "0x0000000000000000000000000000000000000002": "0x0000000000000000000000000000000000000000000000000000000000000003"} }, "id":32}
   ```
   Example of the response:
   ```
@@ -97,14 +97,14 @@ If you set up your tree manually, you are able to update it manually. You should
 
 
 ### Method - `extraUpdateTreeFromContract`.
-Normally, you shouldn't use this method at all. If you add your tree from your smart contract with config you shouldn't update your tree manually. Autoupdate function is working every time you interact with the provider by your index (mostly, when different getProof methods are invoked). This method is for abnormal behaviour. You can use it, e.g. inside catching error logic, when your proofs are incorrect. The case when it may happen is if in the Ethereum blockchain occurs disagreement in miners competition and when chain was splitted autoUpdate function fetched the data from the chain that loses in the longest chain rule. You should send POST request with corresponding data inside it. The data must be an object with key `_index` (you received index of your tree when you created it using "addTreeFromContract" method). The value's data type must be `number`. The method will fetch data starting from the 0 block and updates your item in provider's database.
+Normally, you shouldn't use this method at all. If you add your tree from your smart contract with config you shouldn't update your tree manually. Autoupdate function is working every time you interact with the provider by your index (mostly, when different getProof methods are invoked). This method is for abnormal behaviour. You can use it, e.g. inside catching error logic, when your proofs are incorrect. The case when it may happen is if in the Ethereum blockchain occurs disagreement in miners competition and when chain was splitted autoUpdate function fetched the data from the chain that loses in the longest chain rule. You should send POST request with corresponding data inside it. The data must be an object with key `index` (you received index of your tree when you created it using "addTreeFromContract" method). The value's data type must be `number`. The method will fetch data starting from the 0 block and updates your item in provider's database.
 
   Example of request's data:
       ```
       {
       "jsonrpc":"2.0",
       "method": "extraUpdateTreeFromContract",
-      "params": {"_index":117215783947 },
+      "params": {"index":117215783947 },
       "id":132
       }
       ```
@@ -118,11 +118,11 @@ Normally, you shouldn't use this method at all. If you add your tree from your s
 There are several methods that you can use to get proofs depends on your needs.
 
 ### Option1. Method - `getProofOp1`.
-Your choice, if you just want to get proof for one key. You need to send POST request with the data, object params should include two keys: `_index` (index of your tree in the provider's database, you got it when you used SaveTree block's methods) and `_key`, the values data types are "number" and "string" correspondingly.
+Your choice, if you just want to get proof for one key. You need to send POST request with the data, object params should include two keys: `index` (index of your tree in the provider's database, you got it when you used SaveTree block's methods) and `key`, the values data types are "number" and "string" correspondingly.
 
 Example of the request's data:
 ```
-{"jsonrpc":"2.0", "method": "getProofOp1", "params": {"_index":117215783947, "_key": "0xabcdef123456789deadbeaf00000000000000000", "id":1}
+{"jsonrpc":"2.0", "method": "getProofOp1", "params": {"index":117215783947, "key": "0xabcdef123456789deadbeaf00000000000000000", "id":1}
 ```
 Example of the response:
 ```
@@ -131,11 +131,11 @@ Example of the response:
 
 ### Option2. Method - `getProofOp2`.
 Your choice, if you want to get proofs for several keys.
-You need to send POST request with the data, object params should include two keys: `_index` (index of your tree in the provider's database, you got it when you used SaveTree block) and `_keys`, the values data types must be "number" and "array" correspondingly. You will get as a return array of proofs in the same order as the keys in a request was (meaning that array index for key in request is the same for it's proof in the response).
+You need to send POST request with the data, object params should include two keys: `index` (index of your tree in the provider's database, you got it when you used SaveTree block) and `keys`, the values data types must be "number" and "array" correspondingly. You will get as a return array of proofs in the same order as the keys in a request was (meaning that array index for key in request is the same for it's proof in the response).
 
 Example of the request's data:
 ```
-{"jsonrpc":"2.0", "method": "getProofOp2", "params": {"_index":231034632258, "_keys": ["0x43", "0x12", "0xad", "0xbb", "0xac"], "id":17}
+{"jsonrpc":"2.0", "method": "getProofOp2", "params": {"index":231034632258, "keys": ["0x43", "0x12", "0xad", "0xbb", "0xac"], "id":17}
 ```
 Example of the response:
 ```
@@ -150,11 +150,11 @@ Example of the response:
 
 ### Option3. Method - `getProofOp3`.
 Your choice, if you want to get one proof for one key with the condition of changing another one key/value pair or several key/value pairs in the tree.
-You need to send POST request with the data, object params should include three keys: `_index` (index of your tree in the provider's database, you got it when you used SaveTree block), `_key`, `_condition` (the new key/value pair/s or existing key/s with new value/s, where key and value data types must be strings), the values data types must be "number" and "string" and "object" correspondingly. The condition itself doesn't change the current state of the tree into database.
+You need to send POST request with the data, object params should include three keys: `index` (index of your tree in the provider's database, you got it when you used SaveTree block), `key`, `condition` (the new key/value pair/s or existing key/s with new value/s, where key and value data types must be strings), the values data types must be "number" and "string" and "object" correspondingly. The condition itself doesn't change the current state of the tree into database.
 
 Example of the request's data:
 ```
-{"jsonrpc":"2.0", "method": "getProofOp3", "params": {"_index":231034632258, "_key": "0x43", "_condition": {
+{"jsonrpc":"2.0", "method": "getProofOp3", "params": {"index":231034632258, "key": "0x43", "condition": {
 "0x43": "0xababcbabc6b9bbdd34babbc2347867836584308798273498723984a00987accd",
 "0xad": "0x2873487162378463287623478678365843087982734987239847239700987431",
 "0xbb": "0x867463217657656746544334d2adaecec4ea5ec4ede45ae4ed45a34276565320",
@@ -168,11 +168,11 @@ Example of the response:
 
 ### Option4. Method - `getProofOp4`.
 Your choice, if you want to get several proofs for several keys with the condition of changing another one key/value pair or several key/value pairs in the tree.
-You need to send POST request with the data, object params should include three keys: `_index` (index of your tree in the provider's database, you got it when you used SaveTree block), `_keys`, `_condition` (the new key/value pair/s or existing key/s with new value/s, where key and value data types must be strings), the values data types must be "number" and "array" and "object" correspondingly. The condition itself doesn't change the current state of the tree into database. You will get as a return array of proofs in the same order as the keys in a request was (meaning that array index for key in request is the same for it's proof in the response).
+You need to send POST request with the data, object params should include three keys: `index` (index of your tree in the provider's database, you got it when you used SaveTree block), `keys`, `condition` (the new key/value pair/s or existing key/s with new value/s, where key and value data types must be strings), the values data types must be "number" and "array" and "object" correspondingly. The condition itself doesn't change the current state of the tree into database. You will get as a return array of proofs in the same order as the keys in a request was (meaning that array index for key in request is the same for it's proof in the response).
 
 Example of the request's data:
 ```
-{"jsonrpc":"2.0", "method": "getProofOp3", "params": {"_index":231034632258, "_keys": ["11", "12", "64", "98", "202"], "_condition": {
+{"jsonrpc":"2.0", "method": "getProofOp3", "params": {"index":231034632258, "keys": ["11", "12", "64", "98", "202"], "condition": {
 "15": "0x5757a77c5c57573328762347867836584308798273498723984723970acccaaa",
 "23": "0x3998965623784632876234acabbb43b432879827349872398472397009870024",
 }},

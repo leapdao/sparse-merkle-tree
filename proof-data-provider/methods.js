@@ -15,8 +15,8 @@ const Methods = {};
  *  Function for creation a new item (type1) into database
  *  @function addTreeManually
  *  @param {Object} [params] Parameters from the request that was send by client(user)
- *  @param {Number} [params._depth] The depth of the sparse merkle tree, must be in a range from 8 to 256
- *  @param {Object} [params._leaves] The leaves of the sparse merkle tree, where keys and values data types must be strings.
+ *  @param {Number} [params.depth] The depth of the sparse merkle tree, must be in a range from 8 to 256
+ *  @param {Object} [params.leaves] The leaves of the sparse merkle tree, where keys and values data types must be strings.
  *  Keys must be a number in a range of depth's amount of bits.
  *  Values must be 32bytes only.
  *  @return {Number} Returns the index of the item that was created due to this request.
@@ -24,8 +24,8 @@ const Methods = {};
  //Example:
  /*
  let params = {
-   _depth: 160,
-   _leaves : {
+   depth: 160,
+   leaves : {
      "0x77111aaabbbcccdddeeeeffff000002222233333" : "0x99999888886666444444555577111aaabbbcccdddeeeeffff000002222233333",
      "0x783248686878ababacbaa67868765abcaef676af" : "0x09234892087a09789abcab0be00e876fe8608a0a0708807a6a88ca00676554bb",
      "0x893427b67b66768ac8bb8a676cbbe8f67ef78b8a" : "0x9897aacbe6bc6afba8ea8be8bc8ef6e8a8f6a8565761230912bc12e2ca123100"
@@ -39,7 +39,7 @@ async function addTreeManually(params) {
     _index = Math.round(Date.now() * Math.random());
     exists = await managerDB.getItemByIndex(_index);
   }
-  await managerDB.putItemByIndex(_index.toString(), false, params._depth.toString(), 0, params._leaves, null);
+  await managerDB.putItemByIndex(_index.toString(), false, params.depth.toString(), 0, params.leaves, null);
   let result = _index;
   return result;
 
@@ -51,18 +51,18 @@ async function addTreeManually(params) {
  *  Requirements: Contract must have event with two parameters: first one key(path) of the smt and second one it's value. Event should be emitted every time the write into smt happens.
  *  @function addTreeFromContract
  *  @param {Object} [params] Parameters from the request that was send by client(user)
- *  @param {Object} [params._config] The configuration in the strict format that is filled by user with custom values.
- *  @param {Number} [params._config.smtDEPTH] The depth of the sparse merkle tree, that is used in smart contract.
- *  @param {String} [params._config.net] Ethereum network where smart contract was deployed. Must be one of the following ['mainnet', 'ropsten', 'kovan', 'rinkeby', 'goerli']
- *  @param {String} [params._config.contractAddress] The address of the smart contract that use sparse merkle tree. Must be ChecksumAddress.
- *  @param {Array} [params._config.contractABI] The smart contract's ABI that use sparse merkle tree.
- *  @param {String} [params._config.eventName] The name of the event that is described in requirements above. The second event's argument (value) data type must be bytes32. The first one (key) data type may be address or uint8...uint256 or bytes1...bytes32.
+ *  @param {Object} [params.config] The configuration in the strict format that is filled by user with custom values.
+ *  @param {Number} [params.config.smtDEPTH] The depth of the sparse merkle tree, that is used in smart contract.
+ *  @param {String} [params.config.net] Ethereum network where smart contract was deployed. Must be one of the following ['mainnet', 'ropsten', 'kovan', 'rinkeby', 'goerli']
+ *  @param {String} [params.config.contractAddress] The address of the smart contract that use sparse merkle tree. Must be ChecksumAddress.
+ *  @param {Array} [params.config.contractABI] The smart contract's ABI that use sparse merkle tree.
+ *  @param {String} [params.config.eventName] The name of the event that is described in requirements above. The second event's argument (value) data type must be bytes32. The first one (key) data type may be address or uint8...uint256 or bytes1...bytes32.
  *  @return {Number} Returns the index of the item that was created due to this request.
  */
  //Example:
  /*
  let params = {
-   _config: {
+   config: {
      "smtDEPTH" : 160,
      "net" : "ropsten",
      "contractABI" : [{"constant":true,"inputs":[],"name":"totalSupply","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"internalType":"address","name":"account","type":"address"},{"internalType":"uint256","name":"balance","type":"uint256"},{"internalType":"bytes","name":"proof","type":"bytes"}],"name":"balanceOf","outputs":[{"internalType":"bool","name":"","type":"bool"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"internalType":"uint256","name":"sender_balance","type":"uint256"},{"internalType":"bytes","name":"sender_proof","type":"bytes"},{"internalType":"address","name":"recipient","type":"address"},{"internalType":"uint256","name":"recipient_balance","type":"uint256"},{"internalType":"bytes","name":"recipient_proof","type":"bytes"},{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"transfer","outputs":[{"internalType":"bool","name":"","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"root","outputs":[{"internalType":"bytes32","name":"","type":"bytes32"}],"payable":false,"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"_initialSupply","type":"uint256"}],"payable":false,"stateMutability":"nonpayable","type":"constructor"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"_address","type":"address"},{"indexed":true,"internalType":"bytes32","name":"_value","type":"bytes32"}],"name":"Write","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"from","type":"address"},{"indexed":true,"internalType":"address","name":"to","type":"address"},{"indexed":false,"internalType":"uint256","name":"value","type":"uint256"}],"name":"Transfer","type":"event"}],
@@ -72,7 +72,7 @@ async function addTreeManually(params) {
  }
  */
 async function addTreeFromContract(params) {
-    let config = params._config;
+    let config = params.config;
     let _index = Math.round(Date.now() * Math.random());
     let exists = await managerDB.getItemByIndex(_index);
     while (exists != null) {
@@ -94,8 +94,8 @@ async function addTreeFromContract(params) {
  *  Updates an item manually by taking key/value pairs from the user's request
  *  @function updateTreeManually
  *  @param {Object} [params] Parameters from the request that was send by client(user)
- *  @param {Number} [params._index] The index of the existing item type1, that user got when created a tree into provider's database.
- *  @param {Object} [params._leaves] The new key/value pairs and/or existing keys with new values, where keys and values data types must be strings.
+ *  @param {Number} [params.index] The index of the existing item type1, that user got when created a tree into provider's database.
+ *  @param {Object} [params.leaves] The new key/value pairs and/or existing keys with new values, where keys and values data types must be strings.
  *  Keys must be a number in a range of depth's amount of bits.
  *  Values must be 32bytes only.
  *  @return {Boolean} Returns true as the result.
@@ -103,8 +103,8 @@ async function addTreeFromContract(params) {
  //Example:
  /*
  let params = {
-   _index: 1575009568558,
-   _leaves : {
+   index: 1575009568558,
+   leaves : {
      "0x77111aaabbbcccdddeeeeffff000002222233333" : "0xa0000000000000000000000000001aaabbbcccdddeeeeffff000002222211111",
      "0xaf87a887a878a7d878c7c77cdd65676a5af676af" : "0x09234892087a09789abcab0be00e876fe8608a0a0708807a6a88ca00676554bb",
      "0xababcbacbabbefefe676fe7f6e76a766f7e6efe6" : "0x9897aacbe6bc6afba8ea8be8bc8ef6e8a8f6a8565761230912bc12e2ca123100"
@@ -113,16 +113,16 @@ async function addTreeFromContract(params) {
 */
 async function updateTreeManually(params) {
 
-  let item = await managerDB.getItemByIndex(params._index.toString());
+  let item = await managerDB.getItemByIndex(params.index.toString());
 
   let depth = item.depth;
   let leaves = item.leaves;
-  let new_leaves = params._leaves;
+  let new_leaves = params.leaves;
   let new_keys = Object.keys(new_leaves);
   for (let i = 0; i < new_keys.length; i++) {
     leaves[new_keys[i]] = new_leaves[new_keys[i]];
   }
-  await managerDB.updateItem(params._index.toString(), depth, 0, leaves);
+  await managerDB.updateItem(params.index.toString(), depth, 0, leaves);
 
   return true;
 }
@@ -135,19 +135,19 @@ async function updateTreeManually(params) {
  *  Extra updates an item by taking Ethereum block number from the user's request
  *  @function extraUpdateTreeFromContract
  *  @param {Object} [params] Parameters from the request that was send by client(user)
- *  @param {Number} [params._index] The index of the existing item type2, that user got when created a tree into provider's database.
+ *  @param {Number} [params.index] The index of the existing item type2, that user got when created a tree into provider's database.
  *  @return {Boolean} Returns true as the result.
  */
  //Example:
  /*
  let params = {
-   _index: 1575009568558
+   index: 1575009568558
  }
 */
 async function extraUpdateTreeFromContract(params) {
-  let item = await managerDB.getItemByIndex(params._index.toString());
-  await managerDB.updateItem(params._index, item.depth, 0, {});
-  await autoUpdate(params._index);
+  let item = await managerDB.getItemByIndex(params.index.toString());
+  await managerDB.updateItem(params.index, item.depth, 0, {});
+  await autoUpdate(params.index);
   return true;
 }
 
@@ -195,25 +195,25 @@ async function autoUpdate(_index) {
  *  Option1. Function for getting one proof for one key.
  *  @function getProofOp1
  *  @param {Object} [params] Parameters from the request that was send by client(user)
- *  @param {Number} [params._index] The index of the existing item (tree), that user got when created a tree into provider's database.
- *  @param {String} [params._key] The sparse merkle tree's key(path) that proof is required.
+ *  @param {Number} [params.index] The index of the existing item (tree), that user got when created a tree into provider's database.
+ *  @param {String} [params.key] The sparse merkle tree's key(path) that proof is required.
  *  Key must be a number in a range of depth's amount of bits.
  *  @return {String} Returns a proof for the key in input as the result.
  */
  //Example:
  /*
  let params = {
-   _index: 1575009568558,
-   _key : "0x77111aaabbbcccdddeeeeffff000002222233333"
+   index: 1575009568558,
+   key : "0x77111aaabbbcccdddeeeeffff000002222233333"
  }
 */
 async function getProofOp1(params) {
-  let item = await managerDB.getItemByIndex(params._index);
+  let item = await managerDB.getItemByIndex(params.index);
   if (item.status) {
-    await autoUpdate(params._index);
+    await autoUpdate(params.index);
   }
   let tree = new SmtLib(item.depth, item.leaves);
-  let proof = tree.createMerkleProof(params._key);
+  let proof = tree.createMerkleProof(params.key);
   return proof;
 }
 
@@ -221,16 +221,16 @@ async function getProofOp1(params) {
  *  Option2. Function for getting several proofs for several keys.
  *  @function getProofOp2
  *  @param {Object} [params] Parameters from the request that was send by client(user)
- *  @param {Number} [params._index] The index of the existing item (tree), that user got when created a tree into provider's database.
- *  @param {Array} [params._keys] The array of the sparse merkle tree's keys(path) that proofs is required.
+ *  @param {Number} [params.index] The index of the existing item (tree), that user got when created a tree into provider's database.
+ *  @param {Array} [params.keys] The array of the sparse merkle tree's keys(path) that proofs is required.
  *  Keys must be a number in a range of depth's amount of bits.
  *  @return {Array} Returns an array of proofs for the keys in the same order as keys was received.
  */
  //Example:
 /*
  let params = {
-   _index: 1575009568558,
-   _keys: [
+   index: 1575009568558,
+   keys: [
      "0x77111aaabbbcccdddeeeeffff000002222233333",
      "0x567a565765765ca765c5e67fefefe6765eaadd6d",
      "0xbcbabcabcefefeacbcabc6eb66bc6eb5b4abce44",
@@ -239,14 +239,14 @@ async function getProofOp1(params) {
  }
 */
 async function getProofOp2(params) {
-  let item = await managerDB.getItemByIndex(params._index);
+  let item = await managerDB.getItemByIndex(params.index);
   if (item.status) {
-    await autoUpdate(params._index);
+    await autoUpdate(params.index);
   }
   let tree = new SmtLib(item.depth, item.leaves);
   let proofs = [];
-  for (let i = 0; i < params._keys.length; i++) {
-    proofs.push(tree.createMerkleProof(params._keys[i]));
+  for (let i = 0; i < params.keys.length; i++) {
+    proofs.push(tree.createMerkleProof(params.keys[i]));
   }
   return proofs;
 }
@@ -255,10 +255,10 @@ async function getProofOp2(params) {
  *  Option3. Function for getting one proof for one key with the condition of changing another one key/value pair or several key/value pairs in the tree.
  *  @function getProofOp3
  *  @param {Object} [params] Parameters from the request that was send by client(user)
- *  @param {Number} [params._index] The index of the existing item (tree), that user got when created a tree into provider's database.
- *  @param {String} [params._key] The sparse merkle tree's key(path) that proof is required.
+ *  @param {Number} [params.index] The index of the existing item (tree), that user got when created a tree into provider's database.
+ *  @param {String} [params.key] The sparse merkle tree's key(path) that proof is required.
  *  Key must be a number in a range of depth's amount of bits.
- *  @param {Object} [params._condition] The new key/value pair/s or existing key/s with new value/s, where key and value data types must be strings.
+ *  @param {Object} [params.condition] The new key/value pair/s or existing key/s with new value/s, where key and value data types must be strings.
  *  Key must be a number in a range of depth's amount of bits.
  *  Value must be 32bytes only.
  *  The condition itself doesn't change the current state of the tree into database.
@@ -267,30 +267,30 @@ async function getProofOp2(params) {
  //Example:
 /*
 let params = {
-  _index: 1575293672452,
-  _key: '0x812F4FB767d3291F3ad84433D251192cd644e913',
-  _condition: {
+  index: 1575293672452,
+  key: '0x812F4FB767d3291F3ad84433D251192cd644e913',
+  condition: {
     '0xcC692921A9D2327B61c3347EB4c07CED0cE7c61c' : '0x0000000000000000000000000000000000000000000000000000000000000328'
   }
 }
 */
 async function getProofOp3(params) {
-  let item = await managerDB.getItemByIndex(params._index);
+  let item = await managerDB.getItemByIndex(params.index);
 
   if (item.status) {
-    await autoUpdate(params._index);
+    await autoUpdate(params.index);
   }
   let leaves = item.leaves;
   let condition_leaves = {};
   for (let k in leaves) {
     condition_leaves[k] = leaves[k];
   }
-  let changed_keys = Object.keys(params._condition);
+  let changed_keys = Object.keys(params.condition);
   for (let i = 0; i < changed_keys.length; i++) {
-    condition_leaves[changed_keys[i]] = params._condition[changed_keys[i]];
+    condition_leaves[changed_keys[i]] = params.condition[changed_keys[i]];
   }
   let tree = new SmtLib(item.depth, condition_leaves);
-  let proof = tree.createMerkleProof(params._key);
+  let proof = tree.createMerkleProof(params.key);
   return proof;
 }
 
@@ -299,10 +299,10 @@ async function getProofOp3(params) {
  *  Option4. Function for getting several proofs for several keys with the condition of changing another one key/value pair or several key/value pairs in the tree.
  *  @function getProofOp4
  *  @param {Object} [params] Parameters from the request that was send by client(user)
- *  @param {Number} [params._index] The index of the existing item (tree), that user got when created a tree into provider's database.
- *  @param {Array} [params._keys] The array of the sparse merkle tree's keys(path) that proofs is required.
+ *  @param {Number} [params.index] The index of the existing item (tree), that user got when created a tree into provider's database.
+ *  @param {Array} [params.keys] The array of the sparse merkle tree's keys(path) that proofs is required.
  *  Keys must be a number in a range of depth's amount of bits.
- *  @param {Object} [params._condition] The new key/value pair/s or existing key/s with new value/s, where key and value data types must be strings.
+ *  @param {Object} [params.condition] The new key/value pair/s or existing key/s with new value/s, where key and value data types must be strings.
  *  Key must be a number in a range of depth's amount of bits.
  *  Value must be 32bytes only.
  *  The condition itself doesn't change the current state of the tree into database.
@@ -311,18 +311,18 @@ async function getProofOp3(params) {
 //Example:
 /*
 let params = {
-  _index: 1575293672452,
-  _keys: ['0xcC692921A9D2327B61c3347EB4c07CED0cE7c61c', '0xaa792921A9D2327B61c3347cc4c08CED0cE7c61c', '0xaa111111a8b153ec72c4281cc4c08CED0cE7c61c'],
-  _condition: {
+  index: 1575293672452,
+  keys: ['0xcC692921A9D2327B61c3347EB4c07CED0cE7c61c', '0xaa792921A9D2327B61c3347cc4c08CED0cE7c61c', '0xaa111111a8b153ec72c4281cc4c08CED0cE7c61c'],
+  condition: {
     '0x812F4FB767d3291F3ad84433D251192cd644e913' : '0x0000000000000000000000000000000000000000000000000000000000000a15'
   }
 }
 */
 async function getProofOp4(params) {
-  let item = await managerDB.getItemByIndex(params._index);
+  let item = await managerDB.getItemByIndex(params.index);
 
   if (item.status) {
-    await autoUpdate(params._index);
+    await autoUpdate(params.index);
   }
 
   let leaves = item.leaves;
@@ -330,16 +330,16 @@ async function getProofOp4(params) {
   for (let k in leaves) {
     condition_leaves[k] = leaves[k];
   }
-  let changed_keys = Object.keys(params._condition);
+  let changed_keys = Object.keys(params.condition);
   for (let i = 0; i < changed_keys.length; i++) {
-    condition_leaves[changed_keys[i]] = params._condition[changed_keys[i]];
+    condition_leaves[changed_keys[i]] = params.condition[changed_keys[i]];
   }
 
   let tree = new SmtLib(item.depth, condition_leaves);
   let proofs = [];
 
-  for (let i = 0; i < params._keys.length; i++) {
-    proofs.push(tree.createMerkleProof(params._keys[i]));
+  for (let i = 0; i < params.keys.length; i++) {
+    proofs.push(tree.createMerkleProof(params.keys[i]));
   }
   return proofs;
 }
@@ -368,92 +368,92 @@ async function check_params_ctype1(params) {
   if (Object.keys(params).length != 2) {
     if (Object.keys(params).length > 2) {
       result.error = true;
-      result.message = "Too many keys in params. Should be only two: '_depth' and '_leaves'.";
+      result.message = "Too many keys in params. Should be only two: 'depth' and 'leaves'.";
       return result;
     } else {
       //here the amount of keys in params is less than two
       if (Object.keys(params).length === 0) {
         result.error = true;
-        result.message = "No required keys in params. Should be two: '_depth' and '_leaves'.";
+        result.message = "No required keys in params. Should be two: 'depth' and 'leaves'.";
         return result;
-      } else if (Object.keys(params).includes("_depth")) {
+      } else if (Object.keys(params).includes("depth")) {
         result.error = true;
-        result.message = "Missing required key '_leaves' in params.";
+        result.message = "Missing required key 'leaves' in params.";
         return result;
-      } else if (Object.keys(params).includes("_leaves")) {
+      } else if (Object.keys(params).includes("leaves")) {
         result.error = true;
-        result.message = "Missing required key '_depth' in params.";
+        result.message = "Missing required key 'depth' in params.";
         return result;
       } else {
         //here there is one key in params but not required
         result.error = true;
-        result.message = "No required keys in params. Should be two: '_depth' and '_leaves'.";
+        result.message = "No required keys in params. Should be two: 'depth' and 'leaves'.";
         return result;
       }
     }
   } else {
     //here the amount of keys in params is correct, but need to check if values are correct
-    if (!Object.keys(params).includes('_depth') || !Object.keys(params).includes('_leaves')) {
+    if (!Object.keys(params).includes('depth') || !Object.keys(params).includes('leaves')) {
       result.error = true;
-      result.message = "No required keys in params. Should be two: '_depth' and '_leaves'.";
+      result.message = "No required keys in params. Should be two: 'depth' and 'leaves'.";
       return result;
     }
   }
-  //Here the params contains only two keys: _depth and _leaves.
-  //check data types of _depth and _leaves
-  if(typeof params._depth != 'number' || Object.prototype.toString.call(params._leaves) != '[object Object]') {
-    if (typeof params._depth === 'number') {
+  //Here the params contains only two keys: depth and leaves.
+  //check data types of depth and leaves
+  if(typeof params.depth != 'number' || Object.prototype.toString.call(params.leaves) != '[object Object]') {
+    if (typeof params.depth === 'number') {
       result.error = true;
-      result.message = "Wrong data type of '_leaves'. Must be object.";
+      result.message = "Wrong data type of 'leaves'. Must be object.";
       return result;
     } else {
       result.error = true;
-      result.message = "Wrong data type of '_depth'. Must be number.";
+      result.message = "Wrong data type of 'depth'. Must be number.";
       return result;
     }
   }
-  //Here the _depth data type is number and _leaves data type is object
-  //check _depth number - must be in range from 8 to 256
-  if (params._depth < 8 || params._depth > 256) {
+  //Here the depth data type is number and leaves data type is object
+  //check depth number - must be in range from 8 to 256
+  if (params.depth < 8 || params.depth > 256) {
     result.error = true;
-    result.message = "Number of '_depth' must be in range from 8 to 256.";
+    result.message = "Number of 'depth' must be in range from 8 to 256.";
     return result;
   }
 
-  //Here the _depth is number in range(8, 256] and absolutely correct.
-  //check if _leaves are empty
-  if (Object.keys(params._leaves).length === 0) {
+  //Here the depth is number in range(8, 256] and absolutely correct.
+  //check if leaves are empty
+  if (Object.keys(params.leaves).length === 0) {
     return result;
   }
 
-  let depth = params._depth;
+  let depth = params.depth;
   let maxnumber = BigInt(2 ** depth) - 1n;
 
-  //check keys of _leaves
-  for (let key in params._leaves) {
+  //check keys of leaves
+  for (let key in params.leaves) {
     let bN;
     try {
       bN = BigInt(key);
     } catch (e) {
       result.error = true;
-      result.message = `"${key}" key in '_leaves' is not a number.`;
+      result.message = `"${key}" key in 'leaves' is not a number.`;
       return result;
     }
     if (bN > maxnumber) {
       result.error = true;
-      result.message = `"${key}" key in '_leaves' is out of range of the tree's depth.`;
+      result.message = `"${key}" key in 'leaves' is out of range of the tree's depth.`;
       return result;
     }
   }
 
-  //Here all the keys in _leaves are absolutely correct.
-  //check the values in _leaves
-  for (let k in params._leaves) {
+  //Here all the keys in leaves are absolutely correct.
+  //check the values in leaves
+  for (let k in params.leaves) {
     let strRegex = "^0[xX][0-9a-fA-F]+$";
     let regex = new RegExp(strRegex);
-    if (params._leaves[k].length != 66 || !(regex.test(params._leaves[k]))) {
+    if (params.leaves[k].length != 66 || !(regex.test(params.leaves[k]))) {
       result.error = true;
-      result.message = `Invalid format of the value by "${k}" key in '_leaves'. Valid format for values is "0x0000000000000000000000000000000000000000000000000000000000000000".`;
+      result.message = `Invalid format of the value by "${k}" key in 'leaves'. Valid format for values is "0x0000000000000000000000000000000000000000000000000000000000000000".`;
       return result;
     }
   }
@@ -472,31 +472,31 @@ async function check_params_ctype2(params) {
   //check if the params have only one key
   if (Object.keys(params).length > 1) {
     result.error = true;
-    result.message = 'Object "params" should have only one property - "_config"';
+    result.message = 'Object "params" should have only one property - "config"';
     return result;
   }
   //check if the key of params is _config
-  if (!params.hasOwnProperty('_config')) {
+  if (!params.hasOwnProperty('config')) {
     result.error = true;
-    result.message = 'There is no required property "_config" in object "params".';
+    result.message = 'There is no required property "config" in object "params".';
     return result;
   }
 
-  let config = params._config;
+  let config = params.config;
   //check config data type
   if (Object.prototype.toString.call(config) != '[object Object]') {
     result.error = true;
-    result.message = 'Wrong data type of "_config". Must be an object.';
+    result.message = 'Wrong data type of "config". Must be an object.';
     return result;
   }
 
   if (Object.keys(config).length > 5) {
     result.error = true;
-    result.message = 'There are too many properties in object "_config". Must be five.';
+    result.message = 'There are too many properties in object "config". Must be five.';
     return result;
   }
 
-  //check if the _config includes all the requiered keys
+  //check if the config includes all the requiered keys
   let notIncluded = [];
   let requiredProperties = ['smtDEPTH', 'net', 'contractAddress', 'contractABI', 'eventName'];
   for (let i = 0; i < requiredProperties.length; i++) {
@@ -507,21 +507,21 @@ async function check_params_ctype2(params) {
   if (notIncluded.length > 0) {
     if (notIncluded.length === 1) {
       result.error = true;
-      result.message = `Missing required parameter: ${notIncluded[0]} in the "_config".`;
+      result.message = `Missing required parameter: ${notIncluded[0]} in the "config".`;
       return result;
     } else {
       result.error = true;
-      result.message = `Missing required parameters: ${notIncluded} in the "_config".`;
+      result.message = `Missing required parameters: ${notIncluded} in the "config".`;
       return result;
     }
   }
 
-  //check the value types of the required keys of _config
+  //check the value types of the required keys of config
 
   //smtDEPTH must be a number in range from 8 to 256
   if (typeof config.smtDEPTH != 'number') {
     result.error = true;
-    result.message = 'Invalid data type of the value by the key "smtDEPTH" into _config. Valid type is "number".';
+    result.message = 'Invalid data type of the value by the key "smtDEPTH" into config. Valid type is "number".';
     return result;
   } else if (config.smtDEPTH > 256 || config.smtDEPTH < 8) {
     result.error = true;
@@ -532,21 +532,21 @@ async function check_params_ctype2(params) {
   let validNetValues = ['mainnet', 'ropsten', 'kovan', 'rinkeby', 'goerli'];
   if (typeof config.net != 'string') {
     result.error = true;
-    result.message = 'Invalid data type of the value by the key "net" into _config. Valid type is "string".';
+    result.message = 'Invalid data type of the value by the key "net" into config. Valid type is "string".';
     return result;
   } else if (!validNetValues.includes(config.net)) {
     result.error = true;
-    result.message = `Invalid value by the key "net" into _config. Valid values are ${validNetValues}.`;
+    result.message = `Invalid value by the key "net" into config. Valid values are ${validNetValues}.`;
     return result;
   }
   //contractABI must be object - add checks and errors when executes, maybe like try catch
   if (typeof config.contractABI != 'object') {
     result.error = true;
-    result.message = 'Invalid data type of the value by the key "contractABI" into _config. Valid type is "array".';
+    result.message = 'Invalid data type of the value by the key "contractABI" into config. Valid type is "array".';
     return result;
   } else if (config.contractABI.length === 'undefined') {
     result.error = true;
-    result.message = 'Invalid data type of the value by the key "contractABI" into _config. Valid type is "array".';
+    result.message = 'Invalid data type of the value by the key "contractABI" into config. Valid type is "array".';
     return result;
   }
   //contractAddress must be a string with toChecksumAddress
@@ -554,21 +554,21 @@ async function check_params_ctype2(params) {
   let regex = new RegExp(strRegex);
   if (typeof config.contractAddress != 'string') {
     result.error = true;
-    result.message = 'Invalid data type of the value by the key "contractAddress" into _config. Valid type is "string".';
+    result.message = 'Invalid data type of the value by the key "contractAddress" into config. Valid type is "string".';
     return result;
   } else if (config.contractAddress.length != 42) {
     result.error = true;
-    result.message = 'Invalid length of the value by the key "contractAddress" into _config.';
+    result.message = 'Invalid length of the value by the key "contractAddress" into config.';
     return result;
   } else if (!regex.test(config.contractAddress)) {
     result.error = true;
-    result.message = 'Invalid value by the key "contractAddress" into _config.';
+    result.message = 'Invalid value by the key "contractAddress" into config.';
     return result;
   }
   //eventName must be a string - add checks of user input when executes
   if (typeof config.eventName != 'string') {
     result.error = true;
-    result.message = 'Invalid data type of the value by the key "eventName" into _config. Valid type is "string".';
+    result.message = 'Invalid data type of the value by the key "eventName" into config. Valid type is "string".';
     return result;
   }
   let eventNames = [];
@@ -597,20 +597,20 @@ async function check_params_utype1(params) {
   //check if the params have only two keys
   if (Object.keys(params).length > 2) {
     result.error = true;
-    result.message = 'Object "params" should have only two properties - "_index" and "_leaves".';
+    result.message = 'Object "params" should have only two properties - "index" and "leaves".';
     return result;
   }
-  //check if the keys of params are _index and _leaves (can be improved with more detailed messages)
-  if (!params.hasOwnProperty('_index') || !params.hasOwnProperty('_leaves')) {
+  //check if the keys of params are index and leaves (can be improved with more detailed messages)
+  if (!params.hasOwnProperty('index') || !params.hasOwnProperty('leaves')) {
     result.error = true;
-    result.message = 'There is no required properties "_index" and/or "_leaves" in object "params".';
+    result.message = 'There is no required properties "index" and/or "leaves" in object "params".';
     return result;
   }
   //check if the item with input index exists
-  let item = await managerDB.getItemByIndex(params._index.toString());
+  let item = await managerDB.getItemByIndex(params.index.toString());
   if (item === null) {
     result.error = true;
-    result.message = `Invalid index. There is no tree with "${params._index}" index.`;
+    result.message = `Invalid index. There is no tree with "${params.index}" index.`;
     return result;
   }
   //check if the item is type1
@@ -621,43 +621,43 @@ async function check_params_utype1(params) {
     return result;
   }
 
-  //check the data type of _leaves
-  if (Object.prototype.toString.call(params._leaves) != '[object Object]') {
+  //check the data type of leaves
+  if (Object.prototype.toString.call(params.leaves) != '[object Object]') {
     result.error = true;
-    result.message = 'Invalid data type of "_leaves". Must be "object"';
+    result.message = 'Invalid data type of "leaves". Must be "object"';
     return result;
   }
-  if (Object.keys(params._leaves).length === 0) {
+  if (Object.keys(params.leaves).length === 0) {
     return result;
   }
 
-  //check _leaves keys
+  //check leaves keys
   let depth = item.depth;
   let maxnumber = BigInt(2 ** depth) - 1n;
 
-  for (let key in params._leaves) {
+  for (let key in params.leaves) {
     let bN;
     try {
       bN = BigInt(key);
     } catch (e) {
       result.error = true;
-      result.message = `This ${key} key in '_leaves' is not a number.`;
+      result.message = `This ${key} key in 'leaves' is not a number.`;
       return result;
     }
     if (bN > maxnumber) {
       result.error = true;
-      result.message = `This ${key} key in '_leaves' is out of range of the tree's depth.`;
+      result.message = `This ${key} key in 'leaves' is out of range of the tree's depth.`;
       return result;
     }
   }
 
-  //check _leaves values
-  for (let k in params._leaves) {
+  //check leaves values
+  for (let k in params.leaves) {
     let strRegex = "^0[xX][0-9a-fA-F]+$";
     let regex = new RegExp(strRegex);
-    if (params._leaves[k].length != 66 || !(regex.test(params._leaves[k]))) {
+    if (params.leaves[k].length != 66 || !(regex.test(params.leaves[k]))) {
       result.error = true;
-      result.message = `Invalid format of the value by ${k} key in '_leaves'. Valid format for values is "0x0000000000000000000000000000000000000000000000000000000000000000".`;
+      result.message = `Invalid format of the value by ${k} key in 'leaves'. Valid format for values is "0x0000000000000000000000000000000000000000000000000000000000000000".`;
       return result;
     }
   }
@@ -676,20 +676,20 @@ async function check_params_utype2(params) {
   //check if the params have only one key
   if (Object.keys(params).length > 1) {
     result.error = true;
-    result.message = 'Object "params" should have only one property - "_index".';
+    result.message = 'Object "params" should have only one property - "index".';
     return result;
   }
-  //check if the key of params is _index.
-  if (!params.hasOwnProperty('_index')) {
+  //check if the key of params is index.
+  if (!params.hasOwnProperty('index')) {
     result.error = true;
-    result.message = 'There is no required property "_index" in object "params".';
+    result.message = 'There is no required property "index" in object "params".';
     return result;
   }
   //check if the item with input index exists
-  let item = await managerDB.getItemByIndex(params._index.toString());
+  let item = await managerDB.getItemByIndex(params.index.toString());
   if (item === null) {
     result.error = true;
-    result.message = `Invalid index. There is no tree with "${params._index}" index.`;
+    result.message = `Invalid index. There is no tree with "${params.index}" index.`;
     return result;
   }
   //check if the item is type2
@@ -714,50 +714,50 @@ async function check_params_gp1(params) {
   //check if the params have only two keys
   if (Object.keys(params).length > 2) {
     result.error = true;
-    result.message = 'Object "params" should have only two properties - "_index" and "_key".';
+    result.message = 'Object "params" should have only two properties - "index" and "key".';
     return result;
   }
-  //check if the keys of params are _index and _key (can be improved with more detailed messages)
-  if (!params.hasOwnProperty('_index') || !params.hasOwnProperty('_key')) {
+  //check if the keys of params are index and key (can be improved with more detailed messages)
+  if (!params.hasOwnProperty('index') || !params.hasOwnProperty('key')) {
     result.error = true;
-    result.message = 'There is no required properties "_index" and/or "_key" in object "params".';
+    result.message = 'There is no required properties "index" and/or "key" in object "params".';
     return result;
   }
   //check data types of params keys
-  if (typeof params._index != 'number' || typeof params._key != 'string') {
-    if (typeof params._index === 'number') {
+  if (typeof params.index != 'number' || typeof params.key != 'string') {
+    if (typeof params.index === 'number') {
       result.error = true;
-      result.message = 'Invalid data type of "_key". Must be a string.';
+      result.message = 'Invalid data type of "key". Must be a string.';
       return result;
     } else {
       result.error = true;
-      result.message = 'Invalid data type of "_index". Must be a number.';
+      result.message = 'Invalid data type of "index". Must be a number.';
       return result;
     }
   }
   //check if the item by input's index exist
-  let item = await managerDB.getItemByIndex(params._index);
+  let item = await managerDB.getItemByIndex(params.index);
   if (item === null) {
     result.error = true;
-    result.message = `Invalid index. There is no tree with such ${params._index} index.`;
+    result.message = `Invalid index. There is no tree with such ${params.index} index.`;
     return result;
   }
 
-  //check _key value
+  //check key value
   let depth = item.depth;
   let maxnumber = BigInt(2 ** depth) - 1n;
 
   let bN;
   try {
-    bN = BigInt(params._key);
+    bN = BigInt(params.key);
   } catch (e) {
     result.error = true;
-    result.message = `This "${params._key}" key is not a number.`;
+    result.message = `This "${params.key}" key is not a number.`;
     return result;
   }
   if (bN > maxnumber) {
     result.error = true;
-    result.message = `This "${params._key}" key is out of range of the tree's depth.`;
+    result.message = `This "${params.key}" key is out of range of the tree's depth.`;
     return result;
   }
   return result;
@@ -774,52 +774,52 @@ async function check_params_gp2(params) {
   //check if the params have only two keys
   if (Object.keys(params).length > 2) {
     result.error = true;
-    result.message = 'Object "params" should have only two properties - "_index" and "_keys".';
+    result.message = 'Object "params" should have only two properties - "index" and "keys".';
     return result;
   }
-  //check if the keys of params are _index and _keys (can be improved with more detailed messages)
-  if (!params.hasOwnProperty('_index') || !params.hasOwnProperty('_keys')) {
+  //check if the keys of params are index and keys (can be improved with more detailed messages)
+  if (!params.hasOwnProperty('index') || !params.hasOwnProperty('keys')) {
     result.error = true;
-    result.message = 'There is no required properties "_index" and/or "_keys" in object "params".';
+    result.message = 'There is no required properties "index" and/or "keys" in object "params".';
     return result;
   }
   //check data types of params keys
-  if (typeof params._index != 'number' || Object.prototype.toString.call(params._keys) != '[object Array]') {
-    if (typeof params._index === 'number') {
+  if (typeof params.index != 'number' || Object.prototype.toString.call(params.keys) != '[object Array]') {
+    if (typeof params.index === 'number') {
       result.error = true;
-      result.message = 'Invalid data type of "_keys". Must be an array.';
+      result.message = 'Invalid data type of "keys". Must be an array.';
       return result;
     } else {
       result.error = true;
-      result.message = 'Invalid data type of "_index". Must be a number.';
+      result.message = 'Invalid data type of "index". Must be a number.';
       return result;
     }
   }
 
   //check if the item by input's index exist
-  let item = await managerDB.getItemByIndex(params._index);
+  let item = await managerDB.getItemByIndex(params.index);
   if (item === null) {
     result.error = true;
-    result.message = `Invalid index. There is no tree with such ${params._index} index.`;
+    result.message = `Invalid index. There is no tree with such ${params.index} index.`;
     return result;
   }
 
-  //check _keys value
+  //check keys value
   let depth = item.depth;
   let maxnumber = BigInt(2 ** depth) - 1n;
 
-  for (let i = 0; i < params._keys.length; i++) {
+  for (let i = 0; i < params.keys.length; i++) {
     let bN;
     try {
-      bN = BigInt(params._keys[i]);
+      bN = BigInt(params.keys[i]);
     } catch (e) {
       result.error = true;
-      result.message = `This ${params._keys[i]} key in '_keys' is not a number.`;
+      result.message = `This ${params.keys[i]} key in 'keys' is not a number.`;
       return result;
     }
     if (bN > maxnumber) {
       result.error = true;
-      result.message = `This ${params._keys[i]} key in '_keys' is out of range of the tree's depth.`;
+      result.message = `This ${params.keys[i]} key in 'keys' is out of range of the tree's depth.`;
       return result;
     }
   }
@@ -837,85 +837,85 @@ async function check_params_gp3(params) {
   //check if the params have only two keys
   if (Object.keys(params).length > 3) {
     result.error = true;
-    result.message = 'Object "params" should have only three properties - "_index", "_key" and "_condition".';
+    result.message = 'Object "params" should have only three properties - "index", "key" and "condition".';
     return result;
   }
-  //check if the keys of params are _index and _key and _condition (can be improved with more detailed messages)
-  if (!params.hasOwnProperty('_index') || !params.hasOwnProperty('_key') || !params.hasOwnProperty('_condition')) {
+  //check if the keys of params are index and key and condition (can be improved with more detailed messages)
+  if (!params.hasOwnProperty('index') || !params.hasOwnProperty('key') || !params.hasOwnProperty('condition')) {
     result.error = true;
-    result.message = 'There is no required properties "_index" and/or "_key" and/or "_condition" in object "params".';
+    result.message = 'There is no required properties "index" and/or "key" and/or "condition" in object "params".';
     return result;
   }
-  //check data type of _index
-  if (typeof params._index != 'number') {
+  //check data type of index
+  if (typeof params.index != 'number') {
     result.error = true;
-    result.message = 'Invalid data type of "_index". Must be a number.'
+    result.message = 'Invalid data type of "index". Must be a number.'
     return result;
   }
   //check if the item by input's index exist
-  let item = await managerDB.getItemByIndex(params._index);
+  let item = await managerDB.getItemByIndex(params.index);
   if (item === null) {
     result.error = true;
-    result.message = `Invalid index. There is no tree with such ${params._index} index.`;
+    result.message = `Invalid index. There is no tree with such ${params.index} index.`;
     return result;
   }
 
-  //check data types of _key and _condition
-  if (typeof params._key != 'string' || Object.prototype.toString.call(params._condition) != '[object Object]') {
-    if (typeof params._key === 'string') {
+  //check data types of key and condition
+  if (typeof params.key != 'string' || Object.prototype.toString.call(params.condition) != '[object Object]') {
+    if (typeof params.key === 'string') {
       result.error = true;
-      result.message = 'Invalid data type of "_condition". Must be an object.';
+      result.message = 'Invalid data type of "condition". Must be an object.';
       return result;
     } else {
       result.error = true;
-      result.message = 'Invalid data type of "_key". Must be a string.';
+      result.message = 'Invalid data type of "key". Must be a string.';
       return result;
     }
   }
 
-  //check _key value
+  //check key value
 
   let depth = item.depth;
   let maxnumber = BigInt(2 ** depth) - 1n;
 
   let bN;
   try {
-    bN = BigInt(params._key);
+    bN = BigInt(params.key);
   } catch (e) {
     result.error = true;
-    result.message = `This "${params._key}" key is not a number.`;
+    result.message = `This "${params.key}" key is not a number.`;
     return result;
   }
   if (bN > maxnumber) {
     result.error = true;
-    result.message = `This "${params._key}" key is out of range of the tree's depth.`;
+    result.message = `This "${params.key}" key is out of range of the tree's depth.`;
     return result;
   }
 
-  //check _condition keys
-  for (let key in params._condition) {
+  //check condition keys
+  for (let key in params.condition) {
     let bN;
     try {
       bN = BigInt(key);
     } catch (e) {
       result.error = true;
-      result.message = `This ${key} key in '_condition' is not a number.`;
+      result.message = `This ${key} key in 'condition' is not a number.`;
       return result;
     }
     if (bN > maxnumber) {
       result.error = true;
-      result.message = `This ${key} key in '_condition' is out of range of the tree's depth.`;
+      result.message = `This ${key} key in 'condition' is out of range of the tree's depth.`;
       return result;
     }
   }
 
-  //check _condition values
-  for (let k in params._condition) {
+  //check condition values
+  for (let k in params.condition) {
     let strRegex = "^0[xX][0-9a-fA-F]+$";
     let regex = new RegExp(strRegex);
-    if (params._condition[k].length != 66 || !(regex.test(params._condition[k]))) {
+    if (params.condition[k].length != 66 || !(regex.test(params.condition[k]))) {
       result.error = true;
-      result.message = `Invalid format of the value by ${k} key in '_condition'. Valid format for values is "0x0000000000000000000000000000000000000000000000000000000000000000".`;
+      result.message = `Invalid format of the value by ${k} key in 'condition'. Valid format for values is "0x0000000000000000000000000000000000000000000000000000000000000000".`;
       return result;
     }
   }
@@ -933,88 +933,88 @@ async function check_params_gp4(params) {
   //check if the params have only two keys
   if (Object.keys(params).length > 3) {
     result.error = true;
-    result.message = 'Object "params" should have only three properties - "_index", "_keys" and "_condition".';
+    result.message = 'Object "params" should have only three properties - "index", "keys" and "condition".';
     return result;
   }
-  //check if the keys of params are _index and _keys and _condition (can be improved with more detailed messages)
-  if (!params.hasOwnProperty('_index') || !params.hasOwnProperty('_keys') || !params.hasOwnProperty('_condition')) {
+  //check if the keys of params are index and keys and condition (can be improved with more detailed messages)
+  if (!params.hasOwnProperty('index') || !params.hasOwnProperty('keys') || !params.hasOwnProperty('condition')) {
     result.error = true;
-    result.message = 'There is no required properties "_index" and/or "_keys" and/or "_condition" in object "params".';
+    result.message = 'There is no required properties "index" and/or "keys" and/or "condition" in object "params".';
     return result;
   }
-  //check data type of _index
-  if (typeof params._index != 'number') {
+  //check data type of index
+  if (typeof params.index != 'number') {
     result.error = true;
-    result.message = 'Invalid data type of "_index". Must be a number.'
+    result.message = 'Invalid data type of "index". Must be a number.'
     return result;
   }
   //check if the item by input's index exist
-  let item = await managerDB.getItemByIndex(params._index);
+  let item = await managerDB.getItemByIndex(params.index);
   if (item === null) {
     result.error = true;
-    result.message = `Invalid index. There is no tree with such ${params._index} index.`;
+    result.message = `Invalid index. There is no tree with such ${params.index} index.`;
     return result;
   }
 
-  //check data types of _keys and _condition
-  if (Object.prototype.toString.call(params._keys) != '[object Array]' || Object.prototype.toString.call(params._condition) != '[object Object]') {
-    if (Object.prototype.toString.call(params._keys) === '[object Array]') {
+  //check data types of keys and condition
+  if (Object.prototype.toString.call(params.keys) != '[object Array]' || Object.prototype.toString.call(params.condition) != '[object Object]') {
+    if (Object.prototype.toString.call(params.keys) === '[object Array]') {
       result.error = true;
-      result.message = 'Invalid data type of "_condition". Must be an object.';
+      result.message = 'Invalid data type of "condition". Must be an object.';
       return result;
     } else {
       result.error = true;
-      result.message = 'Invalid data type of "_keys". Must be an array.';
+      result.message = 'Invalid data type of "keys". Must be an array.';
       return result;
     }
   }
 
 
-  //check _keys values
+  //check keys values
 
   let depth = item.depth;
   let maxnumber = BigInt(2 ** depth) - 1n;
 
-  for (let i = 0; i < params._keys.length; i++) {
+  for (let i = 0; i < params.keys.length; i++) {
     let bN;
     try {
-      bN = BigInt(params._keys[i]);
+      bN = BigInt(params.keys[i]);
     } catch (e) {
       result.error = true;
-      result.message = `This ${params._keys[i]} key in '_keys' is not a number.`;
+      result.message = `This ${params.keys[i]} key in 'keys' is not a number.`;
       return result;
     }
     if (bN > maxnumber) {
       result.error = true;
-      result.message = `This ${params._keys[i]} key in '_keys' is out of range of the tree's depth.`;
+      result.message = `This ${params.keys[i]} key in 'keys' is out of range of the tree's depth.`;
       return result;
     }
   }
 
-  //check _condition keys
-  for (let key in params._condition) {
+  //check condition keys
+  for (let key in params.condition) {
     let bN;
     try {
       bN = BigInt(key);
     } catch (e) {
       result.error = true;
-      result.message = `This ${key} key in '_condition' is not a number.`;
+      result.message = `This ${key} key in 'condition' is not a number.`;
       return result;
     }
     if (bN > maxnumber) {
       result.error = true;
-      result.message = `This ${key} key in '_condition' is out of range of the tree's depth.`;
+      result.message = `This ${key} key in 'condition' is out of range of the tree's depth.`;
       return result;
     }
   }
 
-  //check _condition values
-  for (let k in params._condition) {
+  //check condition values
+  for (let k in params.condition) {
     let strRegex = "^0[xX][0-9a-fA-F]+$";
     let regex = new RegExp(strRegex);
-    if (params._condition[k].length != 66 || !(regex.test(params._condition[k]))) {
+    if (params.condition[k].length != 66 || !(regex.test(params.condition[k]))) {
       result.error = true;
-      result.message = `Invalid format of the value by ${k} key in '_condition'. Valid format for values is "0x0000000000000000000000000000000000000000000000000000000000000000".`;
+      result.message = `Invalid format of the value by ${k} key in 'condition'. Valid format for values is "0x0000000000000000000000000000000000000000000000000000000000000000".`;
       return result;
     }
   }
