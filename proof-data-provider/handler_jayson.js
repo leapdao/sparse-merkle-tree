@@ -24,8 +24,7 @@ async function error_handler(check_type, params) {
 Function that invokes method with params.
 */
 async function method_handler(method, params) {
-    let result = await Methods[method](params);
-    return result;
+    return Methods[method](params);
 }
 
 exports.error_handler = error_handler;

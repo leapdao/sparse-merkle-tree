@@ -23,7 +23,7 @@ async function getItemByIndex(_index) {
 //@param _data object
 //adds new item to db
 async function putItemByIndex(_index, _data) {
-  return await client.set(_index, JSON.stringify(_data));
+  return client.set(_index, JSON.stringify(_data));
 };
 //updates item's leaves and blockNumber
 //@param _index must be a string
@@ -41,7 +41,7 @@ async function updateItem(_index, _depth, _blockNumber, _leaves) {
     item.leaves = _leaves;
   }
 
-  return await client.set(_index, JSON.stringify(item));
+  return client.set(_index, JSON.stringify(item));
 };
 
 dbManager["getItemByIndex"] = getItemByIndex;
