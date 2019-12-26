@@ -5,40 +5,41 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-const keccak256 = require('ethereumjs-util').keccak256;
+const { keccak256 } = require("ethereumjs-util");
 
-const JSBI = require('jsbi');
+const JSBI = require("jsbi");
 
-const ZERO = '0x0000000000000000000000000000000000000000000000000000000000000000';
+const ZERO =
+  "0x0000000000000000000000000000000000000000000000000000000000000000";
 const one = JSBI.BigInt(1);
 const two = JSBI.BigInt(2);
 const merkelize = (hash1, hash2) => {
   const buffer = Buffer.alloc(64, 0);
-  if (typeof hash1 === 'string' || hash1 instanceof String) {
-    buffer.write(hash1.replace('0x', ''), 'hex');
+  if (typeof hash1 === "string" || hash1 instanceof String) {
+    buffer.write(hash1.replace("0x", ""), "hex");
   } else {
     hash1.copy(buffer);
   }
-  if (typeof hash2 === 'string' || hash2 instanceof String) {
-    buffer.write(hash2.replace('0x', ''), 32, 'hex');
+  if (typeof hash2 === "string" || hash2 instanceof String) {
+    buffer.write(hash2.replace("0x", ""), 32, "hex");
   } else {
     hash2.copy(buffer, 32);
   }
-  return `0x${keccak256(buffer).toString('hex')}`;
+  return `0x${keccak256(buffer).toString("hex")}`;
 };
 
 function setTrailBit(trail, pos) {
-  const bytePos = (trail.length - 1) - Math.floor(pos / 8);
+  const bytePos = trail.length - 1 - Math.floor(pos / 8);
   let val = trail.readUInt8(bytePos);
-  val += 1 << (pos % 8); // eslint-disable-line no-bitwise
+  val += 1 << pos % 8; // eslint-disable-line no-bitwise
   trail.writeUInt8(val, bytePos);
 }
 
 function setDefaultNodes(depth) {
   const defaultNodes = new Array(depth + 1);
-  defaultNodes[0] = `0x${Buffer.alloc(32, 0).toString('hex')}`;
+  defaultNodes[0] = `0x${Buffer.alloc(32, 0).toString("hex")}`;
   for (let i = 1; i < depth + 1; i++) {
-    defaultNodes[i] = `0x${Buffer.alloc(32, 0).toString('hex')}`;
+    defaultNodes[i] = `0x${Buffer.alloc(32, 0).toString("hex")}`;
   }
   return defaultNodes;
 }
@@ -53,19 +54,25 @@ function createTree(orderedLeaves, depth, defaultNodes) {
 
   for (let level = 0; level < depth; level++) {
     nextLevel = {};
-    for (const index in treeLevel) { // eslint-disable-line no-restricted-syntax
-      if (treeLevel.hasOwnProperty(index)) { // eslint-disable-line no-prototype-builtins
+    for (const index in treeLevel) {
+      // eslint-disable-line no-restricted-syntax
+      if (treeLevel.hasOwnProperty(index)) {
+        // eslint-disable-line no-prototype-builtins
         halfIndex = JSBI.divide(JSBI.BigInt(index, 10), two).toString();
         value = treeLevel[index];
         if (value == ZERO) {
           delete treeLevel[index];
         }
-        if (JSBI.__absoluteModSmall(JSBI.BigInt(index, 10), two) === 0) { // eslint-disable-line no-underscore-dangle
+        if (JSBI.__absoluteModSmall(JSBI.BigInt(index, 10), two) === 0) {
+          // eslint-disable-line no-underscore-dangle
           const coIndex = JSBI.add(JSBI.BigInt(index, 10), one).toString();
           if (value == ZERO && !treeLevel[coIndex]) {
             nextLevel[halfIndex] = ZERO;
           } else {
-            nextLevel[halfIndex] = merkelize(value, treeLevel[coIndex] || defaultNodes[level]);
+            nextLevel[halfIndex] = merkelize(
+              value,
+              treeLevel[coIndex] || defaultNodes[level]
+            );
           }
         } else {
           const coIndex = JSBI.subtract(JSBI.BigInt(index, 10), one).toString();
@@ -95,7 +102,7 @@ module.exports = class SmtLib {
 
     if (leaves && Object.keys(leaves).length !== 0) {
       this.tree = createTree(this.leaves, this.depth, this.defaultNodes);
-      this.root = this.tree[this.depth]['0'];
+      this.root = this.tree[this.depth]["0"];
     } else {
       this.tree = [];
       this.root = this.defaultNodes[this.depth];
@@ -104,22 +111,25 @@ module.exports = class SmtLib {
 
   createMerkleProof(uid) {
     let index = JSBI.BigInt(uid, 10);
-    let proof = '';
+    let proof = "";
     const trail = Buffer.alloc(Math.ceil(this.depth / 8), 0);
     let siblingIndex;
     let siblingHash;
     for (let level = 0; level < this.depth; level++) {
-      siblingIndex = (JSBI.__absoluteModSmall(index, 2) === 0) ? JSBI.add(index, one) : JSBI.subtract(index, one); // eslint-disable-line no-underscore-dangle
+      siblingIndex =
+        JSBI.__absoluteModSmall(index, 2) === 0
+          ? JSBI.add(index, one)
+          : JSBI.subtract(index, one); // eslint-disable-line no-underscore-dangle
       index = JSBI.divide(index, two);
       if (level < this.tree.length) {
         siblingHash = this.tree[level][siblingIndex.toString(10)];
         if (siblingHash) {
-          proof += siblingHash.replace('0x', '');
+          proof += siblingHash.replace("0x", "");
           setTrailBit(trail, level);
         }
       }
     }
-    const total = Buffer.concat([trail, Buffer.from(proof, 'hex')]);
-    return `0x${  total.toString('hex')}`;
+    const total = Buffer.concat([trail, Buffer.from(proof, "hex")]);
+    return `0x${total.toString("hex")}`;
   }
-}
+};

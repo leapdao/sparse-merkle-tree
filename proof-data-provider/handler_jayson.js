@@ -1,4 +1,4 @@
-const {Methods, inputErrors} = require('./methods');
+const { Methods, inputErrors } = require("./methods");
 
 /*
 Function that takes params and by check type invokes function that looks for errors in params,
@@ -6,26 +6,33 @@ if there is some error it forms response with message
 that describes this error, if there is no input_errors the function allows method to be invoked.
 */
 
-async function error_handler(check_type, params) {
-  if (Object.prototype.toString.call(params) != '[object Object]') {
-    let response = {"code": -32602, "message": "Invalid params", "data": "Params must be an object."};
+async function errorHandler(checkType, params) {
+  if (Object.prototype.toString.call(params) !== "[object Object]") {
+    const response = {
+      code: -32602,
+      message: "Invalid params",
+      data: "Params must be an object."
+    };
     return response;
   }
-  let check = await inputErrors[check_type](params);
+  const check = await inputErrors[checkType](params);
   if (check.error) {
-    let response = {"code": -32602, "message": "Invalid params", "data": check.message};
+    const response = {
+      code: -32602,
+      message: "Invalid params",
+      data: check.message
+    };
     return response;
-  } else {
-    return null;
   }
+  return null;
 }
 
 /*
 Function that invokes method with params.
 */
-async function method_handler(method, params) {
-    return Methods[method](params);
+async function methodHandler(method, params) {
+  return Methods[method](params);
 }
 
-exports.error_handler = error_handler;
-exports.method_handler = method_handler;
+exports.errorHandler = errorHandler;
+exports.methodHandler = methodHandler;
