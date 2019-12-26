@@ -39,7 +39,7 @@ async function addTreeManually(params) {
     _index = Math.round(Date.now() * Math.random());
     exists = await managerDB.getItemByIndex(_index);
   }
-  await managerDB.putItemByIndex(_index.toString(), false, params.depth.toString(), 0, params.leaves, null);
+  await managerDB.putItemByIndex(_index.toString(), { depth: params.depth.toString(), leaves: params.leaves, blockNumber: 0 });
   let result = _index;
   return result;
 
@@ -72,14 +72,13 @@ async function addTreeManually(params) {
  }
  */
 async function addTreeFromContract(params) {
-    let config = params.config;
     let _index = Math.round(Date.now() * Math.random());
     let exists = await managerDB.getItemByIndex(_index);
     while (exists != null) {
       _index = Math.round(Date.now() * Math.random());
       exists = await managerDB.getItemByIndex(_index);
     }
-    await managerDB.putItemByIndex(_index.toString(), true, config.smtDEPTH.toString(), 0, {}, config);
+    await managerDB.putItemByIndex(_index.toString(), {depth: params.config.smtDEPTH.toString(), blockNumber: 0, leaves: {}, config: params.config });
     await autoUpdate(_index);
     let result = _index;
     return result;
@@ -161,7 +160,7 @@ async function extraUpdateTreeFromContract(params) {
 async function autoUpdate(_index) {
   let item = await managerDB.getItemByIndex(_index);
   //use eventListener
-  if(item.status) {
+  if(item.config) {
     //check that config is correct
     let depth = item.depth;
     if (depth != item.config.smtDEPTH.toString()) {
@@ -209,7 +208,7 @@ async function autoUpdate(_index) {
 */
 async function getProofOp1(params) {
   let item = await managerDB.getItemByIndex(params.index);
-  if (item.status) {
+  if (item.config) {
     await autoUpdate(params.index);
   }
   let tree = new SmtLib(item.depth, item.leaves);
@@ -240,7 +239,7 @@ async function getProofOp1(params) {
 */
 async function getProofOp2(params) {
   let item = await managerDB.getItemByIndex(params.index);
-  if (item.status) {
+  if (item.config) {
     await autoUpdate(params.index);
   }
   let tree = new SmtLib(item.depth, item.leaves);
@@ -277,7 +276,7 @@ let params = {
 async function getProofOp3(params) {
   let item = await managerDB.getItemByIndex(params.index);
 
-  if (item.status) {
+  if (item.config) {
     await autoUpdate(params.index);
   }
   let leaves = item.leaves;
@@ -321,7 +320,7 @@ let params = {
 async function getProofOp4(params) {
   let item = await managerDB.getItemByIndex(params.index);
 
-  if (item.status) {
+  if (item.config) {
     await autoUpdate(params.index);
   }
 
@@ -608,13 +607,13 @@ async function check_params_utype1(params) {
   }
   //check if the item with input index exists
   let item = await managerDB.getItemByIndex(params.index.toString());
-  if (item === null) {
+  if (!item) {
     result.error = true;
     result.message = `Invalid index. There is no tree with "${params.index}" index.`;
     return result;
   }
   //check if the item is type1
-  if (item.status) {
+  if (item.config) {
     //Blocking manually updating items that was created with config
     result.error = true;
     result.message = "You can't update tree that wasn't created manually.";
@@ -693,7 +692,7 @@ async function check_params_utype2(params) {
     return result;
   }
   //check if the item is type2
-  if (!item.status) {
+  if (!item.config) {
     //Blocking updating items that was created manually
     result.error = true;
     result.message = "You can't use extra update method on tree that was created manually.";
@@ -737,7 +736,7 @@ async function check_params_gp1(params) {
   }
   //check if the item by input's index exist
   let item = await managerDB.getItemByIndex(params.index);
-  if (item === null) {
+  if (!item) {
     result.error = true;
     result.message = `Invalid index. There is no tree with such ${params.index} index.`;
     return result;
@@ -798,7 +797,7 @@ async function check_params_gp2(params) {
 
   //check if the item by input's index exist
   let item = await managerDB.getItemByIndex(params.index);
-  if (item === null) {
+  if (!item) {
     result.error = true;
     result.message = `Invalid index. There is no tree with such ${params.index} index.`;
     return result;
@@ -854,7 +853,7 @@ async function check_params_gp3(params) {
   }
   //check if the item by input's index exist
   let item = await managerDB.getItemByIndex(params.index);
-  if (item === null) {
+  if (!item) {
     result.error = true;
     result.message = `Invalid index. There is no tree with such ${params.index} index.`;
     return result;
@@ -950,7 +949,7 @@ async function check_params_gp4(params) {
   }
   //check if the item by input's index exist
   let item = await managerDB.getItemByIndex(params.index);
-  if (item === null) {
+  if (!item) {
     result.error = true;
     result.message = `Invalid index. There is no tree with such ${params.index} index.`;
     return result;

@@ -15,49 +15,23 @@ const dbManager = {};
 
 //returns item object from db using item's index
 async function getItemByIndex(_index) {
-  let item = await client.get(_index).then(string => {
-    let data = JSON.parse(string);
-    return data;
-  });
-  return item;
+  let item = await client.get(_index);
+  return JSON.parse(item);
 };
 
 //@param _index must be string
-//@param _status boolean
+//@param _data object
 //adds new item to db
-async function putItemByIndex(_index, _status, _depth, _blockNumber, _leaves, _config) {
-  if(_status) {
-    let data = {
-      depth: _depth,
-      blockNumber: _blockNumber,
-      leaves: _leaves,
-      status: _status,
-      config: _config
-    };
-    let result = await client.set(_index, JSON.stringify(data));
-    return result; //returns promise with string 'OK'
-
-  } else {
-    let data = {
-      depth: _depth,
-      blockNumber: _blockNumber,
-      leaves: _leaves,
-      status: _status
-    };
-    let result = await client.set(_index, JSON.stringify(data));
-    return result;
-  }
-
+async function putItemByIndex(_index, _data) {
+  return await client.set(_index, JSON.stringify(_data));
 };
 //updates item's leaves and blockNumber
 //@param _index must be a string
 async function updateItem(_index, _depth, _blockNumber, _leaves) {
-  let item = await client.get(_index).then(item => {
-    let data = JSON.parse(item);
-    return data;
-  });
+  let item = await client.get(_index);
+  item = JSON.parse(item);
 
-  if (item === null) {
+  if (!item) {
     console.log(`There is no item with such index: ${_index} inside current state of the database`);
     return;
   }
@@ -67,9 +41,7 @@ async function updateItem(_index, _depth, _blockNumber, _leaves) {
     item.leaves = _leaves;
   }
 
-  let result = await client.set(_index, JSON.stringify(item));
-  return result;
-
+  return await client.set(_index, JSON.stringify(item));
 };
 
 dbManager["getItemByIndex"] = getItemByIndex;
