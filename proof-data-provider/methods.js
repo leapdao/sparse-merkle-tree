@@ -33,16 +33,9 @@ const Methods = {};
  }
  */
 async function addTreeManually(params) {
-  let _index = Math.round(Date.now() * Math.random());
-  let exists = await managerDB.getItemByIndex(_index);
-  while (exists != null) {
-    _index = Math.round(Date.now() * Math.random());
-    exists = await managerDB.getItemByIndex(_index);
-  }
-  await managerDB.putItemByIndex(_index.toString(), { depth: params.depth.toString(), leaves: params.leaves, blockNumber: 0 });
-  let result = _index;
-  return result;
-
+  let _index = Web3.utils.sha3(JSON.stringify(params) + Date.now());
+  await managerDB.putItemByIndex(_index, { depth: params.depth.toString(), leaves: params.leaves, blockNumber: 0 });
+  return _index;
 }
 
 /**
@@ -72,16 +65,10 @@ async function addTreeManually(params) {
  }
  */
 async function addTreeFromContract(params) {
-    let _index = Math.round(Date.now() * Math.random());
-    let exists = await managerDB.getItemByIndex(_index);
-    while (exists != null) {
-      _index = Math.round(Date.now() * Math.random());
-      exists = await managerDB.getItemByIndex(_index);
-    }
-    await managerDB.putItemByIndex(_index.toString(), {depth: params.config.smtDEPTH.toString(), blockNumber: 0, leaves: {}, config: params.config });
+    let _index = Web3.utils.sha3(JSON.stringify(params) + Date.now());
+    await managerDB.putItemByIndex(_index, {depth: params.config.smtDEPTH.toString(), blockNumber: 0, leaves: {}, config: params.config });
     await autoUpdate(_index);
-    let result = _index;
-    return result;
+    return _index;
 }
 
 //Block#2. UpdateTree. Updates existing items.
