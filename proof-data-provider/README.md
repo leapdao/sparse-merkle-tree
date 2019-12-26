@@ -30,7 +30,7 @@ curl -X POST http://3.9.177.228/ -H 'Content-Type: application/json' -d '{
 
 ### Method - `addTreeManually`.
 You can save your tree to the provider's database manually by sending POST request with corresponding data inside it. The data must be object with keys `depth` and `leaves` and the values must be `number` and `object` (`{}`) accordingly.
-Example of the request's data:
+Example of the request payload:
 ```
 {"jsonrpc":"2.0", "method": "addTreeManually", "params": {"depth": 160, "leaves": {"0x0000000000000000000000000000000000000001": "0x0000000000000000000000000000000000000000000000000000000000000001", "0x0000000000000000000000000000000000000002": "0x0000000000000000000000000000000000000000000000000000000000000002"} }, "id":64}
 ```
@@ -39,7 +39,7 @@ Example of the response:
 {"jsonrpc":"2.0", "id":64, "result":307534184564}
 ```
 
-The response's result is your tree's INDEX into provider's database. You need to save it. You will use it in all your next interactions with your sparse-merkle-tree.
+The response is your tree's INDEX into provider's database. You need to save it. You will use it in all your next interactions with your sparse-merkle-tree.
 
 
 ### Method - `addTreeFromContract`.
@@ -64,7 +64,7 @@ Prerequisites:
 "contractABI" - The smart contract's ABI that use sparse merkle tree.
 "eventName" - The name of the event that is described in requirements above. The second event's argument (value) data type must be bytes32. The first one (key) data type may be address or uint8...uint256 or bytes1...bytes32.
 
-Example of the request's data:
+Example of the request payload:
 ```
 {"jsonrpc":"2.0", "method": "addTreeFromContract", "params": {"config": {
   "smtDEPTH" : 160,
@@ -79,14 +79,14 @@ Example of the response:
 {"jsonrpc":"2.0", "id":24, "result":117215783947}
 ```
 
-The response's result is your tree's INDEX into provider's database. You need to save it. You will use it in all your next interactions with your sparse-merkle-tree.
+The response is your tree's INDEX into provider's database. You need to save it. You will use it in all your next interactions with your sparse-merkle-tree.
 
 ## UpdateTree block:
 
 ### Method - `updateTreeManually`.
 If you set up your tree manually, you are able to update it manually. You should send POST request with corresponding data inside it. The data must be an object with keys `index` (you received index of your tree when you created it using "addTreeManually" method) and `leaves` (leaves must contain only new data, if values of already existing keys was changed, this key/value pairs must be included). The value's data type must be `number` and `object` (`{}`) accordingly.
 
-  Example of request's data:
+  Example of the request payload:
   ```
   {"jsonrpc":"2.0", "method": "updateTreeManually", "params": {"index":307534184564, "leaves": {"0x0000000000000000000000000000000000000005": "0x0000000000000000000000000000000000000000000000000000000000000007", "0x0000000000000000000000000000000000000002": "0x0000000000000000000000000000000000000000000000000000000000000003"} }, "id":32}
   ```
@@ -99,7 +99,7 @@ If you set up your tree manually, you are able to update it manually. You should
 ### Method - `extraUpdateTreeFromContract`.
 Normally, you shouldn't use this method at all. If you add your tree from your smart contract with config you shouldn't update your tree manually. Autoupdate function is working every time you interact with the provider by your index (mostly, when different getProof methods are invoked). This method is for abnormal behaviour. You can use it, e.g. inside catching error logic, when your proofs are incorrect. The case when it may happen is if in the Ethereum blockchain occurs disagreement in miners competition and when chain was splitted autoUpdate function fetched the data from the chain that loses in the longest chain rule. You should send POST request with corresponding data inside it. The data must be an object with key `index` (you received index of your tree when you created it using "addTreeFromContract" method). The value's data type must be `number`. The method will fetch data starting from the 0 block and updates your item in provider's database.
 
-  Example of request's data:
+  Example of the request payload:
       ```
       {
       "jsonrpc":"2.0",
@@ -120,7 +120,7 @@ There are several methods that you can use to get proofs depends on your needs.
 ### Option1. Method - `getProofOp1`.
 Your choice, if you just want to get proof for one key. You need to send POST request with the data, object params should include two keys: `index` (index of your tree in the provider's database, you got it when you used SaveTree block's methods) and `key`, the values data types are "number" and "string" correspondingly.
 
-Example of the request's data:
+Example of the request payload:
 ```
 {"jsonrpc":"2.0", "method": "getProofOp1", "params": {"index":117215783947, "key": "0xabcdef123456789deadbeaf00000000000000000", "id":1}
 ```
@@ -133,7 +133,7 @@ Example of the response:
 Your choice, if you want to get proofs for several keys.
 You need to send POST request with the data, object params should include two keys: `index` (index of your tree in the provider's database, you got it when you used SaveTree block) and `keys`, the values data types must be "number" and "array" correspondingly. You will get as a return array of proofs in the same order as the keys in a request was (meaning that array index for key in request is the same for it's proof in the response).
 
-Example of the request's data:
+Example of the request payload:
 ```
 {"jsonrpc":"2.0", "method": "getProofOp2", "params": {"index":231034632258, "keys": ["0x43", "0x12", "0xad", "0xbb", "0xac"], "id":17}
 ```
@@ -152,7 +152,7 @@ Example of the response:
 Your choice, if you want to get one proof for one key with the condition of changing another one key/value pair or several key/value pairs in the tree.
 You need to send POST request with the data, object params should include three keys: `index` (index of your tree in the provider's database, you got it when you used SaveTree block), `key`, `condition` (the new key/value pair/s or existing key/s with new value/s, where key and value data types must be strings), the values data types must be "number" and "string" and "object" correspondingly. The condition itself doesn't change the current state of the tree into database.
 
-Example of the request's data:
+Example of the request payload:
 ```
 {"jsonrpc":"2.0", "method": "getProofOp3", "params": {"index":231034632258, "key": "0x43", "condition": {
 "0x43": "0xababcbabc6b9bbdd34babbc2347867836584308798273498723984a00987accd",
@@ -170,7 +170,7 @@ Example of the response:
 Your choice, if you want to get several proofs for several keys with the condition of changing another one key/value pair or several key/value pairs in the tree.
 You need to send POST request with the data, object params should include three keys: `index` (index of your tree in the provider's database, you got it when you used SaveTree block), `keys`, `condition` (the new key/value pair/s or existing key/s with new value/s, where key and value data types must be strings), the values data types must be "number" and "array" and "object" correspondingly. The condition itself doesn't change the current state of the tree into database. You will get as a return array of proofs in the same order as the keys in a request was (meaning that array index for key in request is the same for it's proof in the response).
 
-Example of the request's data:
+Example of the request payload:
 ```
 {"jsonrpc":"2.0", "method": "getProofOp3", "params": {"index":231034632258, "keys": ["11", "12", "64", "98", "202"], "condition": {
 "15": "0x5757a77c5c57573328762347867836584308798273498723984723970acccaaa",
