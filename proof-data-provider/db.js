@@ -37,7 +37,7 @@ async function updateItem(_index, _depth, _blockNumber, _leaves) {
     item.leaves = _leaves;
   }
 
-  await client.set(_index, JSON.stringify(item));
+  return client.set(_index, JSON.stringify(item));
 }
 
 dbManager.getItemByIndex = getItemByIndex;

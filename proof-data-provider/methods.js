@@ -5,6 +5,19 @@ const managerDB = require("./db.js");
 
 const infuraId = config.get("infuraId");
 
+// helper simple hash function
+function hash(str) {
+  let hash = 5381;
+  let i = str.length;
+
+  while(i) {
+    hash = (hash * 33) ^ str.charCodeAt(--i);
+  }
+
+  return hash >>> 0;
+}
+
+
 // API methods(functions)
 const Methods = {};
 // Block#1. SaveTree. Create items into database.
@@ -34,7 +47,7 @@ const Methods = {};
  }
  */
 async function addTreeManually(params) {
-  const index = Web3.utils.sha3(JSON.stringify(params) + Date.now());
+  const index = hash(JSON.stringify(params) + Date.now());
   await managerDB.putItemByIndex(index, {
     depth: params.depth.toString(),
     leaves: params.leaves,
@@ -70,7 +83,7 @@ async function addTreeManually(params) {
  }
  */
 async function addTreeFromContract(params) {
-  const index = Web3.utils.sha3(JSON.stringify(params) + Date.now());
+  const index = hash(JSON.stringify(params) + Date.now());
   await managerDB.putItemByIndex(index, {
     depth: params.config.smtDEPTH.toString(),
     blockNumber: 0,
@@ -113,7 +126,7 @@ async function updateTreeManually(params) {
   const { leaves } = item;
   const newLeaves = params.leaves;
   const newKeys = Object.keys(newLeaves);
-  for (let i = 0; i < new_keys.length; i++) {
+  for (let i = 0; i < newKeys.length; i++) {
     leaves[newKeys[i]] = newLeaves[newKeys[i]];
   }
   await managerDB.updateItem(params.index.toString(), depth, 0, leaves);
@@ -332,7 +345,7 @@ async function getProofOp4(params) {
     conditionLeaves[changedKeys[i]] = params.condition[changedKeys[i]];
   }
 
-  const tree = new SmtLib(item.depth, condition_leaves);
+  const tree = new SmtLib(item.depth, conditionLeaves);
   const proofs = [];
 
   for (let i = 0; i < params.keys.length; i++) {
