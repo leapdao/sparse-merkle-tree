@@ -6,17 +6,16 @@ const managerDB = require("./db.js");
 const infuraId = config.get("infuraId");
 
 // helper simple hash function
-function hash(str) {
+function hashString(str) {
   let hash = 5381;
   let i = str.length;
 
-  while(i) {
+  while (i) {
     hash = (hash * 33) ^ str.charCodeAt(--i);
   }
 
   return hash >>> 0;
 }
-
 
 // API methods(functions)
 const Methods = {};
@@ -47,7 +46,7 @@ const Methods = {};
  }
  */
 async function addTreeManually(params) {
-  const index = hash(JSON.stringify(params) + Date.now());
+  const index = hashString(JSON.stringify(params) + Date.now());
   await managerDB.putItemByIndex(index, {
     depth: params.depth.toString(),
     leaves: params.leaves,
@@ -83,7 +82,7 @@ async function addTreeManually(params) {
  }
  */
 async function addTreeFromContract(params) {
-  const index = hash(JSON.stringify(params) + Date.now());
+  const index = hashString(JSON.stringify(params) + Date.now());
   await managerDB.putItemByIndex(index, {
     depth: params.config.smtDEPTH.toString(),
     blockNumber: 0,
@@ -126,7 +125,7 @@ async function updateTreeManually(params) {
   const { leaves } = item;
   const newLeaves = params.leaves;
   const newKeys = Object.keys(newLeaves);
-  for (let i = 0; i < newKeys.length; i++) {
+  for (let i = 0; i < newKeys.length; i += 1) {
     leaves[newKeys[i]] = newLeaves[newKeys[i]];
   }
   await managerDB.updateItem(params.index.toString(), depth, 0, leaves);
@@ -190,7 +189,7 @@ async function autoUpdate(_index) {
     const events = await contract.getPastEvents(item.config.eventName, {
       fromBlock: blockNumber
     });
-    for (let i = 0; i < events.length; i++) {
+    for (let i = 0; i < events.length; i += 1) {
       blockNumber = events[i].blockNumber;
       leaves[events[i].returnValues[0]] = events[i].returnValues[1]; // think about types
     }
@@ -256,7 +255,7 @@ async function getProofOp2(params) {
   }
   const tree = new SmtLib(item.depth, item.leaves);
   const proofs = [];
-  for (let i = 0; i < params.keys.length; i++) {
+  for (let i = 0; i < params.keys.length; i += 1) {
     proofs.push(tree.createMerkleProof(params.keys[i]));
   }
   return proofs;
@@ -297,7 +296,7 @@ async function getProofOp3(params) {
     conditionLeaves[k] = leaves[k];
   }
   const changedKeys = Object.keys(params.condition);
-  for (let i = 0; i < changedKeys.length; i++) {
+  for (let i = 0; i < changedKeys.length; i += 1) {
     conditionLeaves[changedKeys[i]] = params.condition[changedKeys[i]];
   }
   const tree = new SmtLib(item.depth, conditionLeaves);
@@ -341,14 +340,14 @@ async function getProofOp4(params) {
     conditionLeaves[k] = leaves[k];
   }
   const changedKeys = Object.keys(params.condition);
-  for (let i = 0; i < changedKeys.length; i++) {
+  for (let i = 0; i < changedKeys.length; i += 1) {
     conditionLeaves[changedKeys[i]] = params.condition[changedKeys[i]];
   }
 
   const tree = new SmtLib(item.depth, conditionLeaves);
   const proofs = [];
 
-  for (let i = 0; i < params.keys.length; i++) {
+  for (let i = 0; i < params.keys.length; i += 1) {
     proofs.push(tree.createMerkleProof(params.keys[i]));
   }
   return proofs;
@@ -446,7 +445,7 @@ async function checkParamsCtype1(params) {
   }
 
   const { depth } = params;
-  const maxnumber = BigInt(2 ** depth) - 1n;
+  const maxnumber = BigInt(2 ** depth) - BigInt(1);
 
   // check keys of leaves
   for (const key in params.leaves) {
@@ -526,7 +525,7 @@ async function checkParamsCtype2(params) {
     "contractABI",
     "eventName"
   ];
-  for (let i = 0; i < requiredProperties.length; i++) {
+  for (let i = 0; i < requiredProperties.length; i += 1) {
     if (!Object.keys(config).includes(requiredProperties[i])) {
       notIncluded.push(requiredProperties[i]);
     }
@@ -611,7 +610,7 @@ async function checkParamsCtype2(params) {
     return result;
   }
   const eventNames = [];
-  for (let i = 0; i < config.contractABI.length; i++) {
+  for (let i = 0; i < config.contractABI.length; i += 1) {
     if (config.contractABI[i].type === "event") {
       eventNames.push(config.contractABI[i].name);
     }
@@ -674,7 +673,7 @@ async function checkParamsUtype1(params) {
 
   // check leaves keys
   const { depth } = item;
-  const maxnumber = BigInt(2 ** depth) - 1n;
+  const maxnumber = BigInt(2 ** depth) - BigInt(1);
 
   for (const key in params.leaves) {
     let bN;
@@ -789,7 +788,7 @@ async function checkParamsGp1(params) {
 
   // check key value
   const { depth } = item;
-  const maxnumber = BigInt(2 ** depth) - 1n;
+  const maxnumber = BigInt(2 ** depth) - BigInt(1);
 
   let bN;
   try {
@@ -854,9 +853,9 @@ async function checkParamsGp2(params) {
 
   // check keys value
   const { depth } = item;
-  const maxnumber = BigInt(2 ** depth) - 1n;
+  const maxnumber = BigInt(2 ** depth) - BigInt(1);
 
-  for (let i = 0; i < params.keys.length; i++) {
+  for (let i = 0; i < params.keys.length; i += 1) {
     let bN;
     try {
       bN = BigInt(params.keys[i]);
@@ -932,7 +931,7 @@ async function checkParamsGp3(params) {
   // check key value
 
   const { depth } = item;
-  const maxnumber = BigInt(2 ** depth) - 1n;
+  const maxnumber = BigInt(2 ** depth) - BigInt(1);
 
   let bN;
   try {
@@ -1036,9 +1035,9 @@ async function checkParamsGp4(params) {
   // check keys values
 
   const { depth } = item;
-  const maxnumber = BigInt(2 ** depth) - 1n;
+  const maxnumber = BigInt(2 ** depth) - BigInt(1);
 
-  for (let i = 0; i < params.keys.length; i++) {
+  for (let i = 0; i < params.keys.length; i += 1) {
     let bN;
     try {
       bN = BigInt(params.keys[i]);

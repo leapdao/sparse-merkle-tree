@@ -38,7 +38,7 @@ function setTrailBit(trail, pos) {
 function setDefaultNodes(depth) {
   const defaultNodes = new Array(depth + 1);
   defaultNodes[0] = `0x${Buffer.alloc(32, 0).toString("hex")}`;
-  for (let i = 1; i < depth + 1; i++) {
+  for (let i = 1; i < depth + 1; i += 1) {
     defaultNodes[i] = `0x${Buffer.alloc(32, 0).toString("hex")}`;
   }
   return defaultNodes;
@@ -52,7 +52,7 @@ function createTree(orderedLeaves, depth, defaultNodes) {
   let halfIndex;
   let value;
 
-  for (let level = 0; level < depth; level++) {
+  for (let level = 0; level < depth; level += 1) {
     nextLevel = {};
     for (const index in treeLevel) {
       // eslint-disable-line no-restricted-syntax
@@ -115,7 +115,7 @@ module.exports = class SmtLib {
     const trail = Buffer.alloc(Math.ceil(this.depth / 8), 0);
     let siblingIndex;
     let siblingHash;
-    for (let level = 0; level < this.depth; level++) {
+    for (let level = 0; level < this.depth; level += 1) {
       siblingIndex =
         JSBI.__absoluteModSmall(index, 2) === 0
           ? JSBI.add(index, one)
