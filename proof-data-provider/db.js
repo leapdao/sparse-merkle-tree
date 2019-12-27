@@ -36,7 +36,7 @@ async function updateItem(_index, _depth, _blockNumber, _leaves) {
     item.blockNumber = _blockNumber;
     item.leaves = _leaves;
   }
-
+  // eslint-disable-next-line consistent-return
   return client.set(_index, JSON.stringify(item));
 }
 

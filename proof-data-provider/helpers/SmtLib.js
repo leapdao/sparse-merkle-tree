@@ -54,18 +54,20 @@ function createTree(orderedLeaves, depth, defaultNodes) {
 
   for (let level = 0; level < depth; level += 1) {
     nextLevel = {};
+    // eslint-disable-next-line no-restricted-syntax
     for (const index in treeLevel) {
-      // eslint-disable-line no-restricted-syntax
+      // eslint-disable-next-line no-prototype-builtins
       if (treeLevel.hasOwnProperty(index)) {
-        // eslint-disable-line no-prototype-builtins
         halfIndex = JSBI.divide(JSBI.BigInt(index, 10), two).toString();
         value = treeLevel[index];
+        // eslint-disable-next-line eqeqeq
         if (value == ZERO) {
           delete treeLevel[index];
         }
+        // eslint-disable-next-line no-underscore-dangle
         if (JSBI.__absoluteModSmall(JSBI.BigInt(index, 10), two) === 0) {
-          // eslint-disable-line no-underscore-dangle
           const coIndex = JSBI.add(JSBI.BigInt(index, 10), one).toString();
+          // eslint-disable-next-line eqeqeq
           if (value == ZERO && !treeLevel[coIndex]) {
             nextLevel[halfIndex] = ZERO;
           } else {
@@ -77,6 +79,7 @@ function createTree(orderedLeaves, depth, defaultNodes) {
         } else {
           const coIndex = JSBI.subtract(JSBI.BigInt(index, 10), one).toString();
           if (treeLevel[coIndex] === undefined) {
+            // eslint-disable-next-line eqeqeq
             if (value == ZERO) {
               nextLevel[halfIndex] = ZERO;
             } else {
@@ -117,9 +120,9 @@ module.exports = class SmtLib {
     let siblingHash;
     for (let level = 0; level < this.depth; level += 1) {
       siblingIndex =
-        JSBI.__absoluteModSmall(index, 2) === 0
+        JSBI.__absoluteModSmall(index, 2) === 0 // eslint-disable-line no-underscore-dangle
           ? JSBI.add(index, one)
-          : JSBI.subtract(index, one); // eslint-disable-line no-underscore-dangle
+          : JSBI.subtract(index, one);
       index = JSBI.divide(index, two);
       if (level < this.tree.length) {
         siblingHash = this.tree[level][siblingIndex.toString(10)];

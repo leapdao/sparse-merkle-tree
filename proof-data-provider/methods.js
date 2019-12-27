@@ -11,9 +11,10 @@ function hashString(str) {
   let i = str.length;
 
   while (i) {
+    // eslint-disable-next-line
     hash = (hash * 33) ^ str.charCodeAt(--i);
   }
-
+  // eslint-disable-next-line no-bitwise
   return hash >>> 0;
 }
 
@@ -89,6 +90,7 @@ async function addTreeFromContract(params) {
     leaves: {},
     config: params.config
   });
+  // eslint-disable-next-line no-use-before-define
   await autoUpdate(index);
   return index;
 }
@@ -153,6 +155,7 @@ async function updateTreeManually(params) {
 async function extraUpdateTreeFromContract(params) {
   const item = await managerDB.getItemByIndex(params.index.toString());
   await managerDB.updateItem(params.index, item.depth, 0, {});
+  // eslint-disable-next-line no-use-before-define
   await autoUpdate(params.index);
   return true;
 }
@@ -191,6 +194,7 @@ async function autoUpdate(_index) {
     });
     for (let i = 0; i < events.length; i += 1) {
       blockNumber = events[i].blockNumber;
+      // eslint-disable-next-line prefer-destructuring
       leaves[events[i].returnValues[0]] = events[i].returnValues[1]; // think about types
     }
     await managerDB.updateItem(_index, depth, blockNumber, leaves);
@@ -291,10 +295,8 @@ async function getProofOp3(params) {
     await autoUpdate(params.index);
   }
   const { leaves } = item;
-  const conditionLeaves = {};
-  for (const k in leaves) {
-    conditionLeaves[k] = leaves[k];
-  }
+  const conditionLeaves = { ...leaves };
+
   const changedKeys = Object.keys(params.condition);
   for (let i = 0; i < changedKeys.length; i += 1) {
     conditionLeaves[changedKeys[i]] = params.condition[changedKeys[i]];
@@ -335,10 +337,7 @@ async function getProofOp4(params) {
   }
 
   const { leaves } = item;
-  const conditionLeaves = {};
-  for (const k in leaves) {
-    conditionLeaves[k] = leaves[k];
-  }
+  const conditionLeaves = { ...leaves };
   const changedKeys = Object.keys(params.condition);
   for (let i = 0; i < changedKeys.length; i += 1) {
     conditionLeaves[changedKeys[i]] = params.condition[changedKeys[i]];
@@ -448,30 +447,32 @@ async function checkParamsCtype1(params) {
   const maxnumber = BigInt(2 ** depth) - BigInt(1);
 
   // check keys of leaves
-  for (const key in params.leaves) {
+  const keysOfLeaves = Object.keys(params.leaves);
+  for (let i = 0; i < keysOfLeaves.length; i += 1) {
     let bN;
     try {
-      bN = BigInt(key);
+      bN = BigInt(keysOfLeaves[i]);
     } catch (e) {
       result.error = true;
-      result.message = `"${key}" key in 'leaves' is not a number.`;
+      result.message = `"${keysOfLeaves[i]}" key in 'leaves' is not a number.`;
       return result;
     }
     if (bN > maxnumber) {
       result.error = true;
-      result.message = `"${key}" key in 'leaves' is out of range of the tree's depth.`;
+      result.message = `"${keysOfLeaves[i]}" key in 'leaves' is out of range of the tree's depth.`;
       return result;
     }
   }
 
   // Here all the keys in leaves are absolutely correct.
   // check the values in leaves
-  for (const k in params.leaves) {
+  const valuesOfLeaves = Object.values(params.leaves);
+  for (let i = 0; i < valuesOfLeaves.length; i += 1) {
     const strRegex = "^0[xX][0-9a-fA-F]+$";
     const regex = new RegExp(strRegex);
-    if (params.leaves[k].length !== 66 || !regex.test(params.leaves[k])) {
+    if (valuesOfLeaves[i].length !== 66 || !regex.test(valuesOfLeaves[i])) {
       result.error = true;
-      result.message = `Invalid format of the value by "${k}" key in 'leaves'. Valid format for values is "0x0000000000000000000000000000000000000000000000000000000000000000".`;
+      result.message = `Invalid format of the value "${valuesOfLeaves[i]}" in 'leaves'. Valid format for values is "0x0000000000000000000000000000000000000000000000000000000000000000".`;
       return result;
     }
   }
@@ -494,22 +495,22 @@ async function checkParamsCtype2(params) {
     return result;
   }
   // check if the key of params is config
-  if (!params.hasOwnProperty("config")) {
+  if (!Object.prototype.hasOwnProperty.call(params, "config")) {
     result.error = true;
     result.message =
       'There is no required property "config" in object "params".';
     return result;
   }
 
-  const { config } = params;
+  const configFromParams = params.config;
   // check config data type
-  if (Object.prototype.toString.call(config) !== "[object Object]") {
+  if (Object.prototype.toString.call(configFromParams) !== "[object Object]") {
     result.error = true;
     result.message = 'Wrong data type of "config". Must be an object.';
     return result;
   }
 
-  if (Object.keys(config).length > 5) {
+  if (Object.keys(configFromParams).length > 5) {
     result.error = true;
     result.message =
       'There are too many properties in object "config". Must be five.';
@@ -526,7 +527,7 @@ async function checkParamsCtype2(params) {
     "eventName"
   ];
   for (let i = 0; i < requiredProperties.length; i += 1) {
-    if (!Object.keys(config).includes(requiredProperties[i])) {
+    if (!Object.keys(configFromParams).includes(requiredProperties[i])) {
       notIncluded.push(requiredProperties[i]);
     }
   }
@@ -544,13 +545,13 @@ async function checkParamsCtype2(params) {
   // check the value types of the required keys of config
 
   // smtDEPTH must be a number in range from 8 to 256
-  if (typeof config.smtDEPTH !== "number") {
+  if (typeof configFromParams.smtDEPTH !== "number") {
     result.error = true;
     result.message =
       'Invalid data type of the value by the key "smtDEPTH" into config. Valid type is "number".';
     return result;
   }
-  if (config.smtDEPTH > 256 || config.smtDEPTH < 8) {
+  if (configFromParams.smtDEPTH > 256 || configFromParams.smtDEPTH < 8) {
     result.error = true;
     result.message =
       "The depth of the sparse merkle tree that is used in smart contracts should be in range from 8 to 256.";
@@ -558,25 +559,25 @@ async function checkParamsCtype2(params) {
   }
   // net must be string value that is maintained by the Infura: 'mainnet', 'ropsten', 'kovan', 'rinkeby', 'goerli'.
   const validNetValues = ["mainnet", "ropsten", "kovan", "rinkeby", "goerli"];
-  if (typeof config.net !== "string") {
+  if (typeof configFromParams.net !== "string") {
     result.error = true;
     result.message =
       'Invalid data type of the value by the key "net" into config. Valid type is "string".';
     return result;
   }
-  if (!validNetValues.includes(config.net)) {
+  if (!validNetValues.includes(configFromParams.net)) {
     result.error = true;
     result.message = `Invalid value by the key "net" into config. Valid values are ${validNetValues}.`;
     return result;
   }
   // contractABI must be object - add checks and errors when executes, maybe like try catch
-  if (typeof config.contractABI !== "object") {
+  if (typeof configFromParams.contractABI !== "object") {
     result.error = true;
     result.message =
       'Invalid data type of the value by the key "contractABI" into config. Valid type is "array".';
     return result;
   }
-  if (config.contractABI.length === "undefined") {
+  if (configFromParams.contractABI.length === "undefined") {
     result.error = true;
     result.message =
       'Invalid data type of the value by the key "contractABI" into config. Valid type is "array".';
@@ -585,37 +586,37 @@ async function checkParamsCtype2(params) {
   // contractAddress must be a string with toChecksumAddress
   const strRegex = "^0[xX][0-9a-fA-F]+$";
   const regex = new RegExp(strRegex);
-  if (typeof config.contractAddress !== "string") {
+  if (typeof configFromParams.contractAddress !== "string") {
     result.error = true;
     result.message =
       'Invalid data type of the value by the key "contractAddress" into config. Valid type is "string".';
     return result;
   }
-  if (config.contractAddress.length !== 42) {
+  if (configFromParams.contractAddress.length !== 42) {
     result.error = true;
     result.message =
       'Invalid length of the value by the key "contractAddress" into config.';
     return result;
   }
-  if (!regex.test(config.contractAddress)) {
+  if (!regex.test(configFromParams.contractAddress)) {
     result.error = true;
     result.message = 'Invalid value by the key "contractAddress" into config.';
     return result;
   }
   // eventName must be a string - add checks of user input when executes
-  if (typeof config.eventName !== "string") {
+  if (typeof configFromParams.eventName !== "string") {
     result.error = true;
     result.message =
       'Invalid data type of the value by the key "eventName" into config. Valid type is "string".';
     return result;
   }
   const eventNames = [];
-  for (let i = 0; i < config.contractABI.length; i += 1) {
-    if (config.contractABI[i].type === "event") {
-      eventNames.push(config.contractABI[i].name);
+  for (let i = 0; i < configFromParams.contractABI.length; i += 1) {
+    if (configFromParams.contractABI[i].type === "event") {
+      eventNames.push(configFromParams.contractABI[i].name);
     }
   }
-  if (!eventNames.includes(config.eventName)) {
+  if (!eventNames.includes(configFromParams.eventName)) {
     result.error = true;
     result.message = "There is no such event name in a contractABI.";
     return result;
@@ -640,7 +641,10 @@ async function checkParamsUtype1(params) {
     return result;
   }
   // check if the keys of params are index and leaves (can be improved with more detailed messages)
-  if (!params.hasOwnProperty("index") || !params.hasOwnProperty("leaves")) {
+  if (
+    !Object.prototype.hasOwnProperty.call(params, "index") ||
+    !Object.prototype.hasOwnProperty.call(params, "leaves")
+  ) {
     result.error = true;
     result.message =
       'There is no required properties "index" and/or "leaves" in object "params".';
@@ -675,29 +679,31 @@ async function checkParamsUtype1(params) {
   const { depth } = item;
   const maxnumber = BigInt(2 ** depth) - BigInt(1);
 
-  for (const key in params.leaves) {
+  const keysOfLeaves = Object.keys(params.leaves);
+  for (let i = 0; i < keysOfLeaves.length; i += 1) {
     let bN;
     try {
-      bN = BigInt(key);
+      bN = BigInt(keysOfLeaves[i]);
     } catch (e) {
       result.error = true;
-      result.message = `This ${key} key in 'leaves' is not a number.`;
+      result.message = `This ${keysOfLeaves[i]} key in 'leaves' is not a number.`;
       return result;
     }
     if (bN > maxnumber) {
       result.error = true;
-      result.message = `This ${key} key in 'leaves' is out of range of the tree's depth.`;
+      result.message = `This ${keysOfLeaves[i]} key in 'leaves' is out of range of the tree's depth.`;
       return result;
     }
   }
 
   // check leaves values
-  for (const k in params.leaves) {
+  const valuesOfLeaves = Object.values(params.leaves);
+  for (let i = 0; i < valuesOfLeaves.length; i += 1) {
     const strRegex = "^0[xX][0-9a-fA-F]+$";
     const regex = new RegExp(strRegex);
-    if (params.leaves[k].length != 66 || !regex.test(params.leaves[k])) {
+    if (valuesOfLeaves[i].length !== 66 || !regex.test(valuesOfLeaves[i])) {
       result.error = true;
-      result.message = `Invalid format of the value by ${k} key in 'leaves'. Valid format for values is "0x0000000000000000000000000000000000000000000000000000000000000000".`;
+      result.message = `Invalid format of the value "${valuesOfLeaves[i]}"  in 'leaves'. Valid format for values is "0x0000000000000000000000000000000000000000000000000000000000000000".`;
       return result;
     }
   }
@@ -720,7 +726,7 @@ async function checkParamsUtype2(params) {
     return result;
   }
   // check if the key of params is index.
-  if (!params.hasOwnProperty("index")) {
+  if (!Object.prototype.hasOwnProperty.call(params, "index")) {
     result.error = true;
     result.message =
       'There is no required property "index" in object "params".';
@@ -761,7 +767,10 @@ async function checkParamsGp1(params) {
     return result;
   }
   // check if the keys of params are index and key (can be improved with more detailed messages)
-  if (!params.hasOwnProperty("index") || !params.hasOwnProperty("key")) {
+  if (
+    !Object.prototype.hasOwnProperty.call(params, "index") ||
+    !Object.prototype.hasOwnProperty.call(params, "key")
+  ) {
     result.error = true;
     result.message =
       'There is no required properties "index" and/or "key" in object "params".';
@@ -822,7 +831,10 @@ async function checkParamsGp2(params) {
     return result;
   }
   // check if the keys of params are index and keys (can be improved with more detailed messages)
-  if (!params.hasOwnProperty("index") || !params.hasOwnProperty("keys")) {
+  if (
+    !Object.prototype.hasOwnProperty.call(params, "index") ||
+    !Object.prototype.hasOwnProperty.call(params, "keys")
+  ) {
     result.error = true;
     result.message =
       'There is no required properties "index" and/or "keys" in object "params".';
@@ -890,9 +902,9 @@ async function checkParamsGp3(params) {
   }
   // check if the keys of params are index and key and condition (can be improved with more detailed messages)
   if (
-    !params.hasOwnProperty("index") ||
-    !params.hasOwnProperty("key") ||
-    !params.hasOwnProperty("condition")
+    !Object.prototype.hasOwnProperty.call(params, "index") ||
+    !Object.prototype.hasOwnProperty.call(params, "key") ||
+    !Object.prototype.hasOwnProperty.call(params, "condition")
   ) {
     result.error = true;
     result.message =
@@ -948,29 +960,33 @@ async function checkParamsGp3(params) {
   }
 
   // check condition keys
-  for (const key in params.condition) {
-    let bN;
+  const keysOfCondition = Object.keys(params.condition);
+  for (let i = 0; i < keysOfCondition.length; i += 1) {
     try {
-      bN = BigInt(key);
+      bN = BigInt(keysOfCondition[i]);
     } catch (e) {
       result.error = true;
-      result.message = `This ${key} key in 'condition' is not a number.`;
+      result.message = `This ${keysOfCondition[i]} key in 'condition' is not a number.`;
       return result;
     }
     if (bN > maxnumber) {
       result.error = true;
-      result.message = `This ${key} key in 'condition' is out of range of the tree's depth.`;
+      result.message = `This ${keysOfCondition[i]} key in 'condition' is out of range of the tree's depth.`;
       return result;
     }
   }
 
   // check condition values
-  for (const k in params.condition) {
+  const valuesOfCondition = Object.values(params.condition);
+  for (let i = 0; i < valuesOfCondition.length; i += 1) {
     const strRegex = "^0[xX][0-9a-fA-F]+$";
     const regex = new RegExp(strRegex);
-    if (params.condition[k].length != 66 || !regex.test(params.condition[k])) {
+    if (
+      valuesOfCondition[i].length !== 66 ||
+      !regex.test(valuesOfCondition[i])
+    ) {
       result.error = true;
-      result.message = `Invalid format of the value by ${k} key in 'condition'. Valid format for values is "0x0000000000000000000000000000000000000000000000000000000000000000".`;
+      result.message = `Invalid format of the value "${valuesOfCondition[i]}" in 'condition'. Valid format for values is "0x0000000000000000000000000000000000000000000000000000000000000000".`;
       return result;
     }
   }
@@ -994,9 +1010,9 @@ async function checkParamsGp4(params) {
   }
   // check if the keys of params are index and keys and condition (can be improved with more detailed messages)
   if (
-    !params.hasOwnProperty("index") ||
-    !params.hasOwnProperty("keys") ||
-    !params.hasOwnProperty("condition")
+    !Object.prototype.hasOwnProperty.call(params, "index") ||
+    !Object.prototype.hasOwnProperty.call(params, "keys") ||
+    !Object.prototype.hasOwnProperty.call(params, "condition")
   ) {
     result.error = true;
     result.message =
@@ -1054,29 +1070,34 @@ async function checkParamsGp4(params) {
   }
 
   // check condition keys
-  for (const key in params.condition) {
+  const keysOfCondition = Object.keys(params.condition);
+  for (let i = 0; i < keysOfCondition.length; i += 1) {
     let bN;
     try {
-      bN = BigInt(key);
+      bN = BigInt(keysOfCondition[i]);
     } catch (e) {
       result.error = true;
-      result.message = `This ${key} key in 'condition' is not a number.`;
+      result.message = `This "${keysOfCondition[i]}" key in 'condition' is not a number.`;
       return result;
     }
     if (bN > maxnumber) {
       result.error = true;
-      result.message = `This ${key} key in 'condition' is out of range of the tree's depth.`;
+      result.message = `This "${keysOfCondition[i]}" key in 'condition' is out of range of the tree's depth.`;
       return result;
     }
   }
 
   // check condition values
-  for (const k in params.condition) {
+  const valuesOfCondition = Object.values(params.condition);
+  for (let i = 0; i < valuesOfCondition.length; i += 1) {
     const strRegex = "^0[xX][0-9a-fA-F]+$";
     const regex = new RegExp(strRegex);
-    if (params.condition[k].length !== 66 || !regex.test(params.condition[k])) {
+    if (
+      valuesOfCondition[i].length !== 66 ||
+      !regex.test(valuesOfCondition[i])
+    ) {
       result.error = true;
-      result.message = `Invalid format of the value by ${k} key in 'condition'. Valid format for values is "0x0000000000000000000000000000000000000000000000000000000000000000".`;
+      result.message = `Invalid format of the value "${valuesOfCondition[i]}" in 'condition'. Valid format for values is "0x0000000000000000000000000000000000000000000000000000000000000000".`;
       return result;
     }
   }
