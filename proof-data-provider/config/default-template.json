@@ -1,4 +1,9 @@
 {
+  "useOwnNode": "Must be Boolean: true - use own Ethereum node, false - use Infura",
+  "node": {
+    "fullURL": "Your node full URL",
+    "network_id": "Id of the network that run your node"
+  },
   "infuraId": "Your infura project ID",
   "redis": {
     "options": {

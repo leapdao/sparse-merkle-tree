@@ -3,7 +3,37 @@ const Web3 = require("web3");
 const SmtLib = require("./helpers/SmtLib.js");
 const managerDB = require("./db.js");
 
-const infuraId = config.get("infuraId");
+let infuraId;
+let nodeUrl;
+let network;
+
+// Check using own node or infura
+const useOwnNode = config.get("useOwnNode");
+if (useOwnNode) {
+  nodeUrl = config.get("node.fullURL");
+  const networkID = config.get("node.network_id");
+  switch (networkID) {
+    case 1:
+      network = "mainnet";
+      break;
+    case 42:
+      network = "kovan";
+      break;
+    case 3:
+      network = "ropsten";
+      break;
+    case 4:
+      network = "rinkeby";
+      break;
+    case 5:
+      network = "goerli";
+      break;
+    default:
+      network = "custom";
+  }
+} else {
+  infuraId = config.get("infuraId");
+}
 
 // helper simple hash function
 function hashString(str) {
@@ -64,7 +94,7 @@ async function addTreeManually(params) {
  *  @param {Object} [params] Parameters from the request that was send by client(user)
  *  @param {Object} [params.config] The configuration in the strict format that is filled by user with custom values.
  *  @param {Number} [params.config.smtDEPTH] The depth of the sparse merkle tree, that is used in smart contract.
- *  @param {String} [params.config.net] Ethereum network where smart contract was deployed. Must be one of the following ['mainnet', 'ropsten', 'kovan', 'rinkeby', 'goerli']
+ *  @param {String} [params.config.net] Ethereum network where smart contract was deployed. Must be one of the following ['mainnet', 'ropsten', 'kovan', 'rinkeby', 'goerli', 'custom']
  *  @param {String} [params.config.contractAddress] The address of the smart contract that use sparse merkle tree. Must be ChecksumAddress.
  *  @param {Array} [params.config.contractABI] The smart contract's ABI that use sparse merkle tree.
  *  @param {String} [params.config.eventName] The name of the event that is described in requirements above. The second event's argument (value) data type must be bytes32. The first one (key) data type may be address or uint8...uint256 or bytes1...bytes32.
@@ -179,7 +209,17 @@ async function autoUpdate(_index) {
     }
     // set up web3
     const { net } = item.config;
-    const provider = `https://${net}.infura.io/v3/${infuraId}`;
+    let provider;
+    if (useOwnNode) {
+      provider = nodeUrl;
+      if (network !== net) {
+        // no updates for wrong input
+        return;
+      }
+    } else {
+      provider = `https://${net}.infura.io/v3/${infuraId}`;
+    }
+
     const web3 = new Web3(provider);
     // fetch data from db
     let { blockNumber } = item;
@@ -557,8 +597,13 @@ async function checkParamsCtype2(params) {
       "The depth of the sparse merkle tree that is used in smart contracts should be in range from 8 to 256.";
     return result;
   }
-  // net must be string value that is maintained by the Infura: 'mainnet', 'ropsten', 'kovan', 'rinkeby', 'goerli'.
-  const validNetValues = ["mainnet", "ropsten", "kovan", "rinkeby", "goerli"];
+  // net must be string value that is maintained by the Infura or custom for other networks when using own node: 'mainnet', 'ropsten', 'kovan', 'rinkeby', 'goerli', 'custom'.
+  let validNetValues;
+  if (useOwnNode) {
+    validNetValues = [network];
+  } else {
+    validNetValues = ["mainnet", "ropsten", "kovan", "rinkeby", "goerli"];
+  }
   if (typeof configFromParams.net !== "string") {
     result.error = true;
     result.message =
