@@ -1,0 +1,43 @@
+{
+  "name": "smt-data-provider",
+  "version": "0.0.1",
+  "description": "A proof data provider for sparse merkle trees",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "lint": "eslint ."
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/leapdao/sparse-merkle-tree.git"
+  },
+  "keywords": [
+    "Ethereum",
+    "sparse",
+    "merkle",
+    "tree",
+    "proof"
+  ],
+  "author": "LeapDAO",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/leapdao/sparse-merkle-tree/issues"
+  },
+  "homepage": "https://github.com/leapdao/sparse-merkle-tree/proof-data-provider#readme",
+  "dependencies": {
+    "async-redis": "^1.1.7",
+    "config": "^3.2.4",
+    "ethereumjs-util": "^6.2.0",
+    "jayson": "^3.2.0",
+    "jsbi": "^3.1.1",
+    "web3": "^1.2.4"
+  },
+  "devDependencies": {
+    "eslint": "^6.8.0",
+    "eslint-config-airbnb-base": "^14.0.0",
+    "eslint-config-prettier": "^6.8.0",
+    "eslint-plugin-import": "^2.19.1",
+    "eslint-plugin-prettier": "^3.1.2",
+    "prettier": "^1.19.1"
+  }
+}

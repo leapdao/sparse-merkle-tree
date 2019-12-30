@@ -1,0 +1,17 @@
+version: "2"
+services:
+  proof-data-provider:
+    container_name: proof-data-provider
+    build: .
+    depends_on:
+      - redis
+    ports:
+      - 3000:3000
+  redis:
+    container_name: redis
+    image: redis
+    volumes:
+      - ./redis:/data
+    expose:
+      - 6379
+    command: ["sh", "-c", "redis-server --appendonly \"yes\""]
