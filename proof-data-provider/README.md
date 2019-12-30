@@ -122,7 +122,7 @@ Your choice, if you just want to get proof for one key. You need to send POST re
 
 Example of the request payload:
 ```
-{"jsonrpc":"2.0", "method": "getProofByKey", "params": {"index":117215783947, "key": "0xabcdef123456789deadbeaf00000000000000000", "id":1}
+{"jsonrpc":"2.0", "method": "getProofByKey", "params": {"index":117215783947, "key": "0xabcdef123456789deadbeaf00000000000000000"}, "id":1}
 ```
 Example of the response:
 ```
@@ -135,7 +135,7 @@ You need to send POST request with the data, object params should include two ke
 
 Example of the request payload:
 ```
-{"jsonrpc":"2.0", "method": "getProofByKeys", "params": {"index":231034632258, "keys": ["0x43", "0x12", "0xad", "0xbb", "0xac"], "id":17}
+{"jsonrpc":"2.0", "method": "getProofByKeys", "params": {"index":231034632258, "keys": ["0x43", "0x12", "0xad", "0xbb", "0xac"]}, "id":17}
 ```
 Example of the response:
 ```
@@ -158,7 +158,7 @@ Example of the request payload:
 "0x43": "0xababcbabc6b9bbdd34babbc2347867836584308798273498723984a00987accd",
 "0xad": "0x2873487162378463287623478678365843087982734987239847239700987431",
 "0xbb": "0x867463217657656746544334d2adaecec4ea5ec4ede45ae4ed45a34276565320",
-"0xac": "0x468764a6454d43d2d643d4c876a98768978979e789e7f78f7f78789e875532ee"} "id":19}
+"0xac": "0x468764a6454d43d2d643d4c876a98768978979e789e7f78f7f78789e875532ee"}} "id":19}
 ```
 
 Example of the response:
