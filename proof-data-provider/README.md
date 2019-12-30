@@ -13,6 +13,8 @@ The service uses [JSON RPC 2.0](https://www.jsonrpc.org/specification) protocol.
 The service's API has three blocks: SaveTree, UpdateTree, GetProof.
 You can use all the procedures of these blocks by sending POST requests with the data in the strict format that is described below.
 
+Config for [Postman](https://www.getpostman.com/): https://gist.github.com/troggy/8a1cc2565f81f1a6e64a3fed5407f800
+
 For example, using curl:
 ```
 curl -X POST http://3.9.177.228/ -H 'Content-Type: application/json' -d '{
