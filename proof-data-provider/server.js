@@ -64,7 +64,7 @@ const server = jayson.server({
     });
   },
 
-  getProofOp1: params => {
+  getProofByKey: params => {
     const error = errorHandler("gp1", params);
     return error.then(err => {
       if (err != null) {
@@ -73,12 +73,12 @@ const server = jayson.server({
         });
       }
       return new Promise(resolve => {
-        const result = methodHandler("getProofOp1", params);
+        const result = methodHandler("getProofByKey", params);
         resolve(result);
       });
     });
   },
-  getProofOp2: params => {
+  getProofByKeys: params => {
     const error = errorHandler("gp2", params);
     return error.then(err => {
       if (err != null) {
@@ -87,12 +87,12 @@ const server = jayson.server({
         });
       }
       return new Promise(resolve => {
-        const result = methodHandler("getProofOp2", params);
+        const result = methodHandler("getProofByKeys", params);
         resolve(result);
       });
     });
   },
-  getProofOp3: params => {
+  getProofByKeyWithCondition: params => {
     const error = errorHandler("gp3", params);
     return error.then(err => {
       if (err != null) {
@@ -101,12 +101,12 @@ const server = jayson.server({
         });
       }
       return new Promise(resolve => {
-        const result = methodHandler("getProofOp3", params);
+        const result = methodHandler("getProofByKeyWithCondition", params);
         resolve(result);
       });
     });
   },
-  getProofOp4: params => {
+  getProofByKeysWithCondition: params => {
     const error = errorHandler("gp4", params);
     return error.then(err => {
       if (err != null) {
@@ -115,7 +115,7 @@ const server = jayson.server({
         });
       }
       return new Promise(resolve => {
-        const result = methodHandler("getProofOp4", params);
+        const result = methodHandler("getProofByKeysWithCondition", params);
         resolve(result);
       });
     });

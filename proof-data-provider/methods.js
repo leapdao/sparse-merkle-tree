@@ -243,11 +243,10 @@ async function autoUpdate(_index) {
 
 // Block#3. GetProof. Gets proof/s from sparse merkle trees.
 // Several methods are presented depends on user's needs.
-// Methods are marked as "Option+OrderNumber" (shorthand "Op0").
 
 /**
  *  Option1. Function for getting one proof for one key.
- *  @function getProofOp1
+ *  @function getProofByKey
  *  @param {Object} [params] Parameters from the request that was send by client(user)
  *  @param {Number} [params.index] The index of the existing item (tree), that user got when created a tree into provider's database.
  *  @param {String} [params.key] The sparse merkle tree's key(path) that proof is required.
@@ -261,7 +260,7 @@ async function autoUpdate(_index) {
    key : "0x77111aaabbbcccdddeeeeffff000002222233333"
  }
 */
-async function getProofOp1(params) {
+async function getProofByKey(params) {
   const item = await managerDB.getItemByIndex(params.index);
   if (item.config) {
     await autoUpdate(params.index);
@@ -273,7 +272,7 @@ async function getProofOp1(params) {
 
 /**
  *  Option2. Function for getting several proofs for several keys.
- *  @function getProofOp2
+ *  @function getProofByKeys
  *  @param {Object} [params] Parameters from the request that was send by client(user)
  *  @param {Number} [params.index] The index of the existing item (tree), that user got when created a tree into provider's database.
  *  @param {Array} [params.keys] The array of the sparse merkle tree's keys(path) that proofs is required.
@@ -292,7 +291,7 @@ async function getProofOp1(params) {
    ]
  }
 */
-async function getProofOp2(params) {
+async function getProofByKeys(params) {
   const item = await managerDB.getItemByIndex(params.index);
   if (item.config) {
     await autoUpdate(params.index);
@@ -307,7 +306,7 @@ async function getProofOp2(params) {
 
 /**
  *  Option3. Function for getting one proof for one key with the condition of changing another one key/value pair or several key/value pairs in the tree.
- *  @function getProofOp3
+ *  @function getProofByKeyWithCondition
  *  @param {Object} [params] Parameters from the request that was send by client(user)
  *  @param {Number} [params.index] The index of the existing item (tree), that user got when created a tree into provider's database.
  *  @param {String} [params.key] The sparse merkle tree's key(path) that proof is required.
@@ -328,7 +327,7 @@ let params = {
   }
 }
 */
-async function getProofOp3(params) {
+async function getProofByKeyWithCondition(params) {
   const item = await managerDB.getItemByIndex(params.index);
 
   if (item.config) {
@@ -348,7 +347,7 @@ async function getProofOp3(params) {
 
 /**
  *  Option4. Function for getting several proofs for several keys with the condition of changing another one key/value pair or several key/value pairs in the tree.
- *  @function getProofOp4
+ *  @function getProofByKeysWithCondition
  *  @param {Object} [params] Parameters from the request that was send by client(user)
  *  @param {Number} [params.index] The index of the existing item (tree), that user got when created a tree into provider's database.
  *  @param {Array} [params.keys] The array of the sparse merkle tree's keys(path) that proofs is required.
@@ -369,7 +368,7 @@ let params = {
   }
 }
 */
-async function getProofOp4(params) {
+async function getProofByKeysWithCondition(params) {
   const item = await managerDB.getItemByIndex(params.index);
 
   if (item.config) {
@@ -396,10 +395,10 @@ Methods.addTreeManually = addTreeManually;
 Methods.addTreeFromContract = addTreeFromContract;
 Methods.updateTreeManually = updateTreeManually;
 Methods.extraUpdateTreeFromContract = extraUpdateTreeFromContract;
-Methods.getProofOp1 = getProofOp1;
-Methods.getProofOp2 = getProofOp2;
-Methods.getProofOp3 = getProofOp3;
-Methods.getProofOp4 = getProofOp4;
+Methods.getProofByKey = getProofByKey;
+Methods.getProofByKeys = getProofByKeys;
+Methods.getProofByKeyWithCondition = getProofByKeyWithCondition;
+Methods.getProofByKeysWithCondition = getProofByKeysWithCondition;
 
 // Internal functions that checks the correctness of the user's input params in the request for each method.
 // If the check finds an error, the method will not be executed and user will get response with Invalid params error + data that describes the specific error.
@@ -798,7 +797,7 @@ async function checkParamsUtype2(params) {
 
 inputErrors.utype2 = checkParamsUtype2;
 
-// Function for checking input params for method getProofOp1
+// Function for checking input params for method getProofByKey
 async function checkParamsGp1(params) {
   const result = {
     error: false,
@@ -862,7 +861,7 @@ async function checkParamsGp1(params) {
 
 inputErrors.gp1 = checkParamsGp1;
 
-// Function for checking params for method getProofOp2
+// Function for checking params for method getProofByKeys
 async function checkParamsGp2(params) {
   const result = {
     error: false,
@@ -932,7 +931,7 @@ async function checkParamsGp2(params) {
 
 inputErrors.gp2 = checkParamsGp2;
 
-// Function for checking input params for method getProofOp3
+// Function for checking input params for method getProofByKeyWithCondition
 async function checkParamsGp3(params) {
   const result = {
     error: false,
@@ -1040,7 +1039,7 @@ async function checkParamsGp3(params) {
 
 inputErrors.gp3 = checkParamsGp3;
 
-// Function for checking input params for method getProofOp4
+// Function for checking input params for method getProofByKeysWithCondition
 async function checkParamsGp4(params) {
   const result = {
     error: false,

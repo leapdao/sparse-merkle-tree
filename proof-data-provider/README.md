@@ -117,25 +117,25 @@ Normally, you shouldn't use this method at all. If you add your tree from your s
 
 There are several methods that you can use to get proofs depends on your needs.
 
-### Option1. Method - `getProofOp1`.
+### Option1. Method - `getProofByKey`.
 Your choice, if you just want to get proof for one key. You need to send POST request with the data, object params should include two keys: `index` (index of your tree in the provider's database, you got it when you used SaveTree block's methods) and `key`, the values data types are "number" and "string" correspondingly.
 
 Example of the request payload:
 ```
-{"jsonrpc":"2.0", "method": "getProofOp1", "params": {"index":117215783947, "key": "0xabcdef123456789deadbeaf00000000000000000", "id":1}
+{"jsonrpc":"2.0", "method": "getProofByKey", "params": {"index":117215783947, "key": "0xabcdef123456789deadbeaf00000000000000000", "id":1}
 ```
 Example of the response:
 ```
 {"jsonrpc":"2.0", "result":"0x8000000000000000000000000000000000000000ab226fd51d2cf039df4890fb09b5d785c63cf076d1517b68e62515fe53cb612f", "id":1}
 ```
 
-### Option2. Method - `getProofOp2`.
+### Option2. Method - `getProofByKeys`.
 Your choice, if you want to get proofs for several keys.
 You need to send POST request with the data, object params should include two keys: `index` (index of your tree in the provider's database, you got it when you used SaveTree block) and `keys`, the values data types must be "number" and "array" correspondingly. You will get as a return array of proofs in the same order as the keys in a request was (meaning that array index for key in request is the same for it's proof in the response).
 
 Example of the request payload:
 ```
-{"jsonrpc":"2.0", "method": "getProofOp2", "params": {"index":231034632258, "keys": ["0x43", "0x12", "0xad", "0xbb", "0xac"], "id":17}
+{"jsonrpc":"2.0", "method": "getProofByKeys", "params": {"index":231034632258, "keys": ["0x43", "0x12", "0xad", "0xbb", "0xac"], "id":17}
 ```
 Example of the response:
 ```
@@ -148,13 +148,13 @@ Example of the response:
 ], "id":17}
 ```
 
-### Option3. Method - `getProofOp3`.
+### Option3. Method - `getProofByKeyWithCondition`.
 Your choice, if you want to get one proof for one key with the condition of changing another one key/value pair or several key/value pairs in the tree.
 You need to send POST request with the data, object params should include three keys: `index` (index of your tree in the provider's database, you got it when you used SaveTree block), `key`, `condition` (the new key/value pair/s or existing key/s with new value/s, where key and value data types must be strings), the values data types must be "number" and "string" and "object" correspondingly. The condition itself doesn't change the current state of the tree into database.
 
 Example of the request payload:
 ```
-{"jsonrpc":"2.0", "method": "getProofOp3", "params": {"index":231034632258, "key": "0x43", "condition": {
+{"jsonrpc":"2.0", "method": "getProofByKeyWithCondition", "params": {"index":231034632258, "key": "0x43", "condition": {
 "0x43": "0xababcbabc6b9bbdd34babbc2347867836584308798273498723984a00987accd",
 "0xad": "0x2873487162378463287623478678365843087982734987239847239700987431",
 "0xbb": "0x867463217657656746544334d2adaecec4ea5ec4ede45ae4ed45a34276565320",
@@ -166,13 +166,13 @@ Example of the response:
 {"jsonrpc":"2.0", "result":"0xc0eec8ae03dd91ce3354ffaf18ecb5cadf111bd46e5c53d4510db087415bb91430a6a637bef2bf8ef84bda7cc9bcf53bdaf756cf3660acfcd46b089ed69b4b443d", "id":19}
 ```
 
-### Option4. Method - `getProofOp4`.
+### Option4. Method - `getProofByKeysWithCondition`.
 Your choice, if you want to get several proofs for several keys with the condition of changing another one key/value pair or several key/value pairs in the tree.
 You need to send POST request with the data, object params should include three keys: `index` (index of your tree in the provider's database, you got it when you used SaveTree block), `keys`, `condition` (the new key/value pair/s or existing key/s with new value/s, where key and value data types must be strings), the values data types must be "number" and "array" and "object" correspondingly. The condition itself doesn't change the current state of the tree into database. You will get as a return array of proofs in the same order as the keys in a request was (meaning that array index for key in request is the same for it's proof in the response).
 
 Example of the request payload:
 ```
-{"jsonrpc":"2.0", "method": "getProofOp3", "params": {"index":231034632258, "keys": ["11", "12", "64", "98", "202"], "condition": {
+{"jsonrpc":"2.0", "method": "getProofByKeysWithCondition", "params": {"index":231034632258, "keys": ["11", "12", "64", "98", "202"], "condition": {
 "15": "0x5757a77c5c57573328762347867836584308798273498723984723970acccaaa",
 "23": "0x3998965623784632876234acabbb43b432879827349872398472397009870024",
 }},
