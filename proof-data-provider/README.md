@@ -59,7 +59,7 @@ Prerequisites:
 }
 ```
 "smtDEPTH" - The depth of the sparse merkle tree, that is used in smart contract.
-"net" - Ethereum network where smart contract was deployed. Must be one of the following ['mainnet', 'ropsten', 'kovan', 'rinkeby', 'goerli']
+"net" - Ethereum network where smart contract was deployed. Must be one of the following ['mainnet', 'ropsten', 'kovan', 'rinkeby', 'goerli'] if provider use Infura and specific value if provider use own ethereum node (depends on the network id that run node, can be one of the above or 'custom' for other networks). Anyway response with error helps to define.
 "contractAddress" - The address of the smart contract that use sparse merkle tree. Must be ChecksumAddress.
 "contractABI" - The smart contract's ABI that use sparse merkle tree.
 "eventName" - The name of the event that is described in requirements above. The second event's argument (value) data type must be bytes32. The first one (key) data type may be address or uint8...uint256 or bytes1...bytes32.
@@ -197,8 +197,10 @@ To create a config, do the following:
 ```
 $ cp config/default_template.json config/default.json
 ```
+Field "useOwnNode":
+- Set flag true if you want to use your own Ethereum node and fill fields "node.fullURL" with your node full url and "node.network_id" with id of the network that run your node (skip field "infuraId").
+- Set flag false if you want to use Infura (skip field "node") and fill "infuraId" field with your own infura project id key.
 
-Fill infuraId field with your own infura project id key.
 
 This service uses a redis instance as a database.
 
