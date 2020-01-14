@@ -1,5 +1,6 @@
 const config = require("config");
 const Web3 = require("web3");
+const keccak256 = require('ethereumjs-util').keccak256;
 const SmtLib = require("./helpers/SmtLib.js");
 const managerDB = require("./db.js");
 
@@ -391,6 +392,89 @@ async function getProofByKeysWithCondition(params) {
   return proofs;
 }
 
+// Block#4. Helper methods.
+
+const ZERO = '0x0000000000000000000000000000000000000000000000000000000000000000';
+// helper function  
+const merkelize = (hash1, hash2) => {
+  const buffer = Buffer.alloc(64, 0);
+  if (typeof hash1 === 'string' || hash1 instanceof String) {
+    buffer.write(hash1.replace('0x', ''), 'hex');
+  } else {
+    hash1.copy(buffer);
+  }
+  if (typeof hash2 === 'string' || hash2 instanceof String) {
+    buffer.write(hash2.replace('0x', ''), 32, 'hex');
+  } else {
+    hash2.copy(buffer, 32);
+  }
+  return `0x${keccak256(buffer).toString('hex')}`;
+};
+
+
+/**
+ *  Function for getting root from the proof, path(index or key) and leaf(value).
+ *  Simplifies check the correctness of the proof. Just compare your root and root from the result.
+ *  @function getRoot
+ *  @param {Object} [params] Parameters from the request that was send by client(user)
+ *  @param {Number} [params.smtDEPTH] The depth of the sparse merkle tree, must be in a range from 8 to 256
+ *  @param {String} [params.key] hex with length in bytes equals the depth of the tree (in bytes).
+ *  @param {String} [params.value] 32-byte hex
+ *  @param {String} [params.proof] hex
+ *
+ *  @return {String} Returns the root of the sparse merkle tree that contains the value by the key.
+ */
+// Example:
+/*
+ let params = {
+   smtDEPTH: 160,
+   key: "0x77111aaabbbcccdddeeeeffff000002222233333",
+   value: "0x99999888886666444444555577111aaabbbcccdddeeeeffff000002222233333",
+   proof: "0x88000000000000000000000000000000000000000f65cfed62d1e8fd4665df02765944bb023b0f235081639274cfb50835f54487a4ee18aee8b6a32bd887cdc20091d16fa9c5c60df9e5c3b52be47edd4d2d06d6"
+ }
+*/
+
+function getRoot(params) {
+  if ((Math.ceil((params.proof.length - 2) / 2) - Math.ceil(params.smtDEPTH / 8)) % 32 !== 0 || Math.ceil((params.proof.length - 2) / 2) > (32 * params.smtDEPTH) + Math.ceil(params.smtDEPTH / 8)) {
+    return "invalid proof format";
+  }
+  let proofElement;
+  let computedHash = params.value;
+  let p = Math.ceil(params.smtDEPTH / 8);
+  let proofBits;
+  let index = BigInt(params.key);
+
+  // first bytes (the length in bits equals the tree depth) of the proof are bits map
+  proofBits = BigInt(params.proof.slice(0, p * 2 + 2));
+  // Go through the tree depth
+  for (let i = 0; i < params.smtDEPTH; i += 1) {
+    // step1 - set up proofElement with the help of proofBits map
+    if (proofBits % BigInt(2) === BigInt(0)) { // check if last bit of proofBits is 0
+      proofElement = ZERO;
+    } else {
+      if (Math.ceil((params.proof.length - 2) / 2) < p) {
+        return "proof not long enough";
+      }
+      proofElement = '0x' + params.proof.slice(p * 2 + 2, p * 2 + 66);
+      p += 32;
+    }
+
+    // step2 - calculate the hash of the next level node (the last node at the end of iterations will be the root)
+    if (computedHash == ZERO && proofElement == ZERO) {
+      computedHash = ZERO;
+    } else if (index % BigInt(2) === BigInt(0)) {
+      computedHash = merkelize(computedHash, proofElement);
+    } else {
+      computedHash = merkelize(proofElement, computedHash);
+    }
+
+    // step3 - update proofBits and index for the next iteration
+    proofBits = proofBits / BigInt(2); // shift it right for next bit
+    index = index / BigInt(2);
+  }
+  return computedHash;
+}
+
 Methods.addTreeManually = addTreeManually;
 Methods.addTreeFromContract = addTreeFromContract;
 Methods.updateTreeManually = updateTreeManually;
@@ -399,6 +483,7 @@ Methods.getProofByKey = getProofByKey;
 Methods.getProofByKeys = getProofByKeys;
 Methods.getProofByKeyWithCondition = getProofByKeyWithCondition;
 Methods.getProofByKeysWithCondition = getProofByKeysWithCondition;
+Methods.getRoot = getRoot;
 
 // Internal functions that checks the correctness of the user's input params in the request for each method.
 // If the check finds an error, the method will not be executed and user will get response with Invalid params error + data that describes the specific error.
@@ -1149,6 +1234,106 @@ async function checkParamsGp4(params) {
 }
 
 inputErrors.gp4 = checkParamsGp4;
+
+// Function for checking input params for method getRoot
+function checkParamsGR(params) {
+  const result = {
+    error: false,
+    message: null
+  };
+  // check if the params have only four keys
+  if (Object.keys(params).length > 4) {
+    result.error = true;
+    result.message =
+      'Object "params" should have only four properties - "smtDEPTH", "key", "value" and "proof".';
+    return result;
+  }
+  // check if the keys of params are smtDEPTH, key, value and proof (can be improved with more detailed messages)
+  if (
+    !Object.prototype.hasOwnProperty.call(params, "smtDEPTH") ||
+    !Object.prototype.hasOwnProperty.call(params, "key") ||
+    !Object.prototype.hasOwnProperty.call(params, "value") ||
+    !Object.prototype.hasOwnProperty.call(params, "proof")
+  ) {
+    result.error = true;
+    result.message =
+      'There is no required properties "smtDEPTH" and/or "key" and/or "value" and/or "proof" in object "params".';
+    return result;
+  }
+  // check data type of smtDEPTH
+  if (typeof params.smtDEPTH !== "number") {
+    result.error = true;
+    result.message = 'Invalid data type of "smtDEPTH". Must be a number.';
+    return result;
+  }
+  // check depth number - must be in range from 8 to 256
+  if (params.smtDEPTH < 8 || params.smtDEPTH > 256) {
+    result.error = true;
+    result.message = "Number of 'smtDEPTH' must be in range from 8 to 256.";
+    return result;
+  }
+
+  // check data types of key, value and proof
+  if (
+    Object.prototype.toString.call(params.key) !== "[object String]" ||
+    Object.prototype.toString.call(params.value) !== "[object String]" ||
+    Object.prototype.toString.call(params.proof) !== "[object String]"
+  ) {
+    if (Object.prototype.toString.call(params.key) !== "[object String]") {
+      result.error = true;
+      result.message = 'Invalid data type of "key". Must be a string.';
+      return result;
+    } else if (Object.prototype.toString.call(params.value) !== "[object String]") {
+      result.error = true;
+      result.message = 'Invalid data type of "value". Must be a string.';
+      return result;
+    }
+    result.error = true;
+    result.message = 'Invalid data type of "proof". Must be a string.';
+    return result;
+  }
+
+  // check key value
+  const maxnumber = BigInt(2 ** params.smtDEPTH) - BigInt(1);
+
+  let bN;
+  try {
+    bN = BigInt(params.key);
+  } catch (e) {
+    result.error = true;
+    result.message = `This "${params.key}" key is not a number.`;
+    return result;
+  }
+  if (bN > maxnumber) {
+    result.error = true;
+    result.message = `This "${params.key}" key is out of range of the tree's depth.`;
+    return result;
+  }
+
+  // check value
+  const strRegex = "^0[xX][0-9a-fA-F]+$";
+  const regex = new RegExp(strRegex);
+  if (
+    params.value.length !== 66 ||
+    !regex.test(params.value)
+  ) {
+    result.error = true;
+    result.message = `Invalid format of the value "${params.value}". Valid format for value is "0x0000000000000000000000000000000000000000000000000000000000000000".`;
+    return result;
+  }
+
+  // check proof
+  if (!regex.test(params.proof)) {
+    result.error = true;
+    result.message = `Invalid format of the proof "${params.proof}".`;
+    return result;
+  }
+
+  return result;
+}
+
+inputErrors.gR = checkParamsGR;
+
 
 exports.Methods = Methods;
 exports.inputErrors = inputErrors;

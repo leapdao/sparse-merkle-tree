@@ -191,6 +191,32 @@ Example of the response:
 ], "id":219}
 ```
 
+## Helper methods block:
+
+### Method - `getRoot`.
+You can check the correctness of the proof that you got by getProof methods without conditions with the help of this method.
+Invoke this method with params that includes four keys: `smtDEPTH` must be a number (the depth of your sparse merkle tree in range from 8 to 256), `key` must be a string contains hex value, `value` must be a string contains 32-bytes hex value (notice, that you need to know exactly value) and `proof` must be a string contains hex value (for example, one that you got as a result of invoking getProof methods without conditions).
+You will get a root of the sparse merkle tree that contains your value by your key.
+It allows you just compare the root of your tree and a root from the result, if roots match - your proof is correct.
+
+Example of the request payload:
+```
+{
+  "jsonrpc":"2.0",
+  "method": "getRoot",
+  "params": {
+    "smtDEPTH":160,
+    "key":"0xdBa97dCe40F531c1354a95B1456ca41e3cdCd2dB",
+    "value":"0x0000000000000000000000000000000000000000000000000000000000000000",
+    "proof":"0xd000000000000000000000000000000000000000383a61e95fcd8551ad94a58c74bc05d74d32c4006b6735e7f76144958d946a68c36b0130fee2f6058afb2f7387aeb09ff99eaca213f5da71466c121b91021fd4e5aa28271290de5c23fdb760a3e5c4ba78cd20d6b546fea21248166cc9383206"
+    },
+  "id":1
+}
+```
+Example of the response:
+```
+{"jsonrpc":"2.0", "result":"0x699d6b9610b8d4716962896ef3c9cbc54469f5a6bf501ade346c2864d2d87331", "id":1}
+```
 
 ## Configuration
 

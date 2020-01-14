@@ -119,6 +119,20 @@ const server = jayson.server({
         resolve(result);
       });
     });
+  },
+  getRoot: params => {
+    const error = errorHandler("gR", params);
+    return error.then(err => {
+      if (err != null) {
+        return new Promise((resolve, reject) => {
+          reject(server.error(err.code, err.message, err.data));
+        });
+      }
+      return new Promise(resolve => {
+        const result = methodHandler("getRoot", params);
+        resolve(result);
+      });
+    });
   }
 });
 
