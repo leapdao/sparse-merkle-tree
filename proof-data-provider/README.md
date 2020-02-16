@@ -121,7 +121,7 @@ You should send POST request with corresponding data inside it:
 - `leaves` — (leaves must contain only new data, if values of already existing keys was changed, this key/value pairs must be included). Object
 
 Example of the request payload:
-  
+
 ```json
 {
   "jsonrpc": "2.0",
@@ -259,7 +259,7 @@ Your choice, if you want to get one proof for one key with the condition of chan
 You need to send POST request with the data, object params should include three keys:
 
 - `index` — (index of your tree in the provider's database, you got it when you used SaveTree block)
-- `key`
+- `key` — key. String
 - `condition` — (the new key/value pair/s or existing key/s with new value/s, where key and value data types must be strings), the values data types must be "number" and "string" and "object" correspondingly. The condition itself doesn't change the current state of the tree into database.
 
 Example of the request payload:
@@ -298,7 +298,7 @@ Your choice, if you want to get several proofs for several keys with the conditi
 You need to send POST request with the data, object params should include three keys:
 
 - `index` — (index of your tree in the provider's database, you got it when you used SaveTree block)
-- `keys`
+- `keys` — array of keys
 - `condition` (the new key/value pair/s or existing key/s with new value/s, where key and value data types must be strings), the values data types must be "number" and "array" and "object" correspondingly. The condition itself doesn't change the current state of the tree into database.
 
 You will get as a return array of proofs in the same order as the keys in a request was (meaning that array index for key in request is the same for it's proof in the response).

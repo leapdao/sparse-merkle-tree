@@ -1,6 +1,6 @@
 const config = require("config");
 const Web3 = require("web3");
-const keccak256 = require('ethereumjs-util').keccak256;
+const { keccak256, toBuffer, bufferToHex } = require("ethereumjs-util");
 const SmtLib = require("./helpers/SmtLib.js");
 const managerDB = require("./db.js");
 
@@ -394,23 +394,15 @@ async function getProofByKeysWithCondition(params) {
 
 // Block#4. Helper methods.
 
-const ZERO = '0x0000000000000000000000000000000000000000000000000000000000000000';
-// helper function  
+const ZERO =
+  "0x0000000000000000000000000000000000000000000000000000000000000000";
+// helper function
 const merkelize = (hash1, hash2) => {
   const buffer = Buffer.alloc(64, 0);
-  if (typeof hash1 === 'string' || hash1 instanceof String) {
-    buffer.write(hash1.replace('0x', ''), 'hex');
-  } else {
-    hash1.copy(buffer);
-  }
-  if (typeof hash2 === 'string' || hash2 instanceof String) {
-    buffer.write(hash2.replace('0x', ''), 32, 'hex');
-  } else {
-    hash2.copy(buffer, 32);
-  }
-  return `0x${keccak256(buffer).toString('hex')}`;
+  toBuffer(hash1).copy(buffer);
+  toBuffer(hash2).copy(buffer, 32);
+  return bufferToHex(keccak256(buffer));
 };
-
 
 /**
  *  Function for getting root from the proof, path(index or key) and leaf(value).
@@ -435,7 +427,17 @@ const merkelize = (hash1, hash2) => {
 */
 
 function getRoot(params) {
-  if ((Math.ceil((params.proof.length - 2) / 2) - Math.ceil(params.smtDEPTH / 8)) % 32 !== 0 || Math.ceil((params.proof.length - 2) / 2) > (32 * params.smtDEPTH) + Math.ceil(params.smtDEPTH / 8)) {
+  const proofLengthInBytes = Math.ceil((params.proof.length - 2) / 2);
+  const amountOfBytesInProofUsedForBitMap = Math.ceil(params.smtDEPTH / 8);
+  const maxTrailLengthInBytes = 32 * params.smtDEPTH;
+  const maxProofLengthInBytes =
+    maxTrailLengthInBytes + amountOfBytesInProofUsedForBitMap;
+
+  // firstly, check if each non-zero sibling hash in proof is 32 bytes length, secondly, check if proof length is less than or equal max
+  if (
+    (proofLengthInBytes - amountOfBytesInProofUsedForBitMap) % 32 !== 0 ||
+    proofLengthInBytes > maxProofLengthInBytes
+  ) {
     return "invalid proof format";
   }
   let proofElement;
@@ -449,18 +451,19 @@ function getRoot(params) {
   // Go through the tree depth
   for (let i = 0; i < params.smtDEPTH; i += 1) {
     // step1 - set up proofElement with the help of proofBits map
-    if (proofBits % BigInt(2) === BigInt(0)) { // check if last bit of proofBits is 0
+    // check if last bit of proofBits is 0
+    if (proofBits % BigInt(2) === BigInt(0)) {
       proofElement = ZERO;
     } else {
-      if (Math.ceil((params.proof.length - 2) / 2) < p) {
+      if (proofLengthInBytes < p) {
         return "proof not long enough";
       }
-      proofElement = '0x' + params.proof.slice(p * 2 + 2, p * 2 + 66);
+      proofElement = `0x${params.proof.slice(p * 2 + 2, p * 2 + 66)}`;
       p += 32;
     }
 
     // step2 - calculate the hash of the next level node (the last node at the end of iterations will be the root)
-    if (computedHash == ZERO && proofElement == ZERO) {
+    if (computedHash === ZERO && proofElement === ZERO) {
       computedHash = ZERO;
     } else if (index % BigInt(2) === BigInt(0)) {
       computedHash = merkelize(computedHash, proofElement);
@@ -469,8 +472,8 @@ function getRoot(params) {
     }
 
     // step3 - update proofBits and index for the next iteration
-    proofBits = proofBits / BigInt(2); // shift it right for next bit
-    index = index / BigInt(2);
+    proofBits /= BigInt(2); // shift it right for next bit
+    index /= BigInt(2);
   }
   return computedHash;
 }
@@ -1283,7 +1286,8 @@ function checkParamsGR(params) {
       result.error = true;
       result.message = 'Invalid data type of "key". Must be a string.';
       return result;
-    } else if (Object.prototype.toString.call(params.value) !== "[object String]") {
+    }
+    if (Object.prototype.toString.call(params.value) !== "[object String]") {
       result.error = true;
       result.message = 'Invalid data type of "value". Must be a string.';
       return result;
@@ -1313,10 +1317,7 @@ function checkParamsGR(params) {
   // check value
   const strRegex = "^0[xX][0-9a-fA-F]+$";
   const regex = new RegExp(strRegex);
-  if (
-    params.value.length !== 66 ||
-    !regex.test(params.value)
-  ) {
+  if (params.value.length !== 66 || !regex.test(params.value)) {
     result.error = true;
     result.message = `Invalid format of the value "${params.value}". Valid format for value is "0x0000000000000000000000000000000000000000000000000000000000000000".`;
     return result;
@@ -1333,7 +1334,6 @@ function checkParamsGR(params) {
 }
 
 inputErrors.gR = checkParamsGR;
-
 
 exports.Methods = Methods;
 exports.inputErrors = inputErrors;
